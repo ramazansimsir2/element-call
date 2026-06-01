@@ -164,9 +164,17 @@ export function createCallFooterViewModel(
         isPip$,
         callModel.showHeader$,
         callModel.setSettingsOpen$,
+        callModel.layout$.pipe(
+          map(
+            (l) =>
+              l.type === "one-on-one-portrait" ||
+              l.type === "one-on-one-landscape",
+          ),
+        ),
       ]).pipe(
-        map(([isPip, showHeader, setSettingsOpen]) =>
+        map(([isPip, showHeader, setSettingsOpen, isOneOnOne]) =>
           !isPip &&
+          !isOneOnOne &&
           !(headerStyle === HeaderStyle.AppBar && showHeader) &&
           showControls
             ? (): void => setSettingsOpen(true)
