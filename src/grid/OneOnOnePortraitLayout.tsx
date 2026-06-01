@@ -40,10 +40,19 @@ const OneOnOneCallingStatus: FC<{ media: RingingMediaViewModel }> = ({
 
 const OneOnOneCallerInfo: FC<{ media: MediaViewModel }> = ({ media }) => {
   const name = useBehavior(media.displayName$);
+  // ringing → "Aranıyor…"; local user in the spotlight (still connecting, no
+  // remote/ringing media yet) → "Bağlanıyor…"; connected remote → no status.
   return (
     <div className={styles.callerInfo}>
       <div className={styles.bigName}>{name}</div>
-      {media.type === "ringing" && <OneOnOneCallingStatus media={media} />}
+      {media.type === "ringing" ? (
+        <OneOnOneCallingStatus media={media} />
+      ) : media.type === "user" && media.local ? (
+        <div className={styles.callingStatus}>
+          <VoiceCallSolidIcon aria-hidden width={20} height={20} />
+          Bağlanıyor…
+        </div>
+      ) : null}
     </div>
   );
 };

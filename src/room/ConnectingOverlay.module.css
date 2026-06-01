@@ -26,7 +26,7 @@ Please see LICENSE in the repository root for full details.
   color: #fff;
 }
 
-.status {
+.callingStatus {
   display: flex;
   align-items: center;
   gap: var(--cpd-space-1x);

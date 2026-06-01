@@ -8,7 +8,6 @@ Please see LICENSE in the repository root for full details.
 import { type FC } from "react";
 import { Heading } from "@vector-im/compound-web";
 import { VoiceCallSolidIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
-import { useTranslation } from "react-i18next";
 
 import { Avatar } from "../Avatar";
 import { type MatrixInfo } from "./VideoPreview";
@@ -25,7 +24,6 @@ interface Props {
  * avatar + name + "Bağlanıyor…".
  */
 export const ConnectingOverlay: FC<Props> = ({ matrixInfo }) => {
-  const { t } = useTranslation();
   return (
     <div className={styles.overlay}>
       <Avatar
@@ -37,9 +35,9 @@ export const ConnectingOverlay: FC<Props> = ({ matrixInfo }) => {
       <Heading as="h2" weight="semibold" size="lg" className={styles.name}>
         {matrixInfo.roomName}
       </Heading>
-      <div className={styles.status}>
+      <div className={styles.callingStatus}>
         <VoiceCallSolidIcon aria-hidden width={20} height={20} />
-        {t("common.connecting")}
+        Bağlanıyor…
       </div>
     </div>
   );
