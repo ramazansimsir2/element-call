@@ -58,6 +58,28 @@ twice (and in the wrong place).
 }
 
 /*
+The app-level AppBar (back button, room title, menu) is rendered OUTSIDE the call
+view (src/AppBar.tsx) and is transparent, so the white page background shows
+through it. OneOnOnePortraitLayout sets data-ec-voice-call on <body> while
+mounted; here we paint the page (and thus the bar) the top blue and make the bar's
+text/icons white. Token overrides are scoped to the bar subtree so the portaled
+modals (which live under <body> but outside the bar) are unaffected.
+*/
+body[data-ec-voice-call="true"] {
+  background-color: #2aa8e8 !important;
+}
+
+body[data-ec-voice-call="true"] [class*="_bar_"] {
+  --cpd-color-text-primary: #ffffff;
+  --cpd-color-icon-primary: #ffffff;
+}
+
+/* Remove the bar's white readability fade (it fades to the canvas colour). */
+body[data-ec-voice-call="true"] [class*="_bar_"]::before {
+  display: none !important;
+}
+
+/*
 Unified footer call buttons (everything except the red End button): translucent
 frosted circles with a white outline and white icons. This makes every button
 identical regardless of compound's primary/secondary state, so the camera-off

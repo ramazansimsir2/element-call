@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 Please see LICENSE in the repository root for full details.
 */
 
-import { type FC, type ReactNode, useCallback } from "react";
+import { type FC, type ReactNode, useCallback, useEffect } from "react";
 import classNames from "classnames";
 import { useTranslation } from "react-i18next";
 import { VoiceCallSolidIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
@@ -68,6 +68,14 @@ export const makeOneOnOnePortraitLayout: CallLayout<
 
   fixed: function OneOnOnePortraitLayoutFixed({ ref, model, Slot }): ReactNode {
     useUpdateLayout();
+    // Flag the 1:1 voice screen on <body> so the app-level AppBar (rendered
+    // outside the call view) can be themed to match — see OneOnOneVoiceTheme.css
+    useEffect(() => {
+      document.body.dataset.ecVoiceCall = "true";
+      return (): void => {
+        delete document.body.dataset.ecVoiceCall;
+      };
+    }, []);
     return (
       <div ref={ref} className={styles.layer}>
         <Slot
