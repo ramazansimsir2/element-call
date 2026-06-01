@@ -92,6 +92,7 @@ Please see LICENSE in the repository root for full details.
 .tile {
   position: absolute;
   inset-block-start: 0;
+  border-radius: var(--cpd-space-6x);
 }
 
 .tile.maximised {
