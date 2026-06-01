@@ -195,6 +195,10 @@ export function createCallFooterViewModel(
       ),
     ),
 
+    switchCamera$: scope.behavior(
+      callModel.switchCamera$.pipe(map((fn) => fn ?? undefined)),
+    ),
+
     hangup$: constant(callModel.hangup),
 
     reactionIdentifier$: constant(reactionIdentifier),
@@ -268,5 +272,6 @@ export function createLobbyFooterViewModel(
     }),
     ...buildMuteBehaviors(scope, muteStates),
     ...buildDeviceBehaviors(scope, mediaDevices, constant(false)),
+    switchCamera$: constant(undefined),
   };
 }

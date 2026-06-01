@@ -7,7 +7,6 @@ Please see LICENSE in the repository root for full details.
 
 import { type BehaviorSubject } from "rxjs";
 
-import { type LocalUserMediaViewModel } from "./media/LocalUserMediaViewModel.ts";
 import { type MediaViewModel } from "./media/MediaViewModel.ts";
 import { type RingingMediaViewModel } from "./media/RingingMediaViewModel.ts";
 import { type UserMediaViewModel } from "./media/UserMediaViewModel.ts";
@@ -49,14 +48,14 @@ export interface OneOnOneLandscapeLayoutMedia {
   type: "one-on-one-landscape";
   edgeToEdge: false;
   spotlight: UserMediaViewModel;
-  pip: LocalUserMediaViewModel | RingingMediaViewModel;
+  pip: UserMediaViewModel | RingingMediaViewModel;
 }
 
 export interface OneOnOnePortraitLayoutMedia {
   type: "one-on-one-portrait";
   edgeToEdge: true;
   spotlight: UserMediaViewModel | RingingMediaViewModel;
-  pip?: LocalUserMediaViewModel;
+  pip?: UserMediaViewModel;
 }
 
 export interface PipLayoutMedia {

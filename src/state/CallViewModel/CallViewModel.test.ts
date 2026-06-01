@@ -503,6 +503,67 @@ describe.each([
     });
   });
 
+  test("one-on-one portrait layout swaps spotlight and PiP tiles", () => {
+    withTestScheduler(({ schedule, expectObservable }) => {
+      withCallViewModel(
+        {
+          remoteParticipants$: constant([aliceParticipant]),
+          roomMembers: [local, alice],
+          rtcMembers$: constant([localRtcMember, aliceRtcMember]),
+          videoEnabled: new Map([[localParticipant, constant(true)]]),
+          windowSize$: constant({ width: 380, height: 700 }),
+        },
+        (vm) => {
+          schedule("-ss", { s: () => vm.swapOneOnOneTiles() });
+
+          expectObservable(summarizeLayout$(vm.layout$)).toBe("aba", {
+            a: {
+              type: "one-on-one-portrait",
+              spotlight: [`${aliceId}:0`],
+              pip: `${localId}:0`,
+              pipSize: "lg",
+            },
+            b: {
+              type: "one-on-one-portrait",
+              spotlight: [`${localId}:0`],
+              pip: `${aliceId}:0`,
+              pipSize: "lg",
+            },
+          });
+        },
+      );
+    });
+  });
+
+  test("one-on-one landscape layout swaps spotlight and PiP tiles", () => {
+    withTestScheduler(({ schedule, expectObservable }) => {
+      withCallViewModel(
+        {
+          remoteParticipants$: constant([aliceParticipant]),
+          roomMembers: [local, alice],
+          rtcMembers$: constant([localRtcMember, aliceRtcMember]),
+          windowSize$: constant({ width: 1000, height: 800 }),
+        },
+        (vm) => {
+          schedule("-ss", { s: () => vm.swapOneOnOneTiles() });
+
+          expectObservable(summarizeLayout$(vm.layout$)).toBe("aba", {
+            a: {
+              type: "one-on-one-landscape",
+              spotlight: `${aliceId}:0`,
+              pip: `${localId}:0`,
+            },
+            b: {
+              type: "one-on-one-landscape",
+              spotlight: `${localId}:0`,
+              pip: `${aliceId}:0`,
+            },
+          });
+        },
+      );
+    });
+  });
+
   test("one-on-one portrait layout shows name tags in room with 3 members", () => {
     withTestScheduler(({ behavior, schedule, expectObservable }) => {
       withCallViewModel(

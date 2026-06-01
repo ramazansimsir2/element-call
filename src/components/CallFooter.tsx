@@ -25,6 +25,7 @@ import {
   ReactionToggleButton,
   LoudspeakerButton,
   SettingsIconButton,
+  SwitchCameraButton,
   type ReactionData,
 } from "../button";
 import styles from "./CallFooter.module.css";
@@ -68,6 +69,8 @@ export interface FooterActions {
   openSettings: (() => void) | undefined;
   /** Also controls if the hangup button is visible */
   hangup: (() => void) | undefined;
+  /** Switch between front/back camera. null = not available (desktop or single camera) */
+  switchCamera: (() => void) | undefined;
 }
 // we do not use any ? optional properties so that the vm type is including all fields.
 export interface FooterState {
@@ -143,6 +146,7 @@ export const CallFooter: FC<FooterProps> = ({ ref, children, vm }) => {
   const videoBlurEnabled = useBehavior(vm.videoBlurEnabled$);
   const buttonSize = useBehavior(vm.buttonSize$);
   const showLogo = useBehavior(vm.showLogo$);
+  const switchCamera = useBehavior(vm.switchCamera$);
 
   // Short, state-aware labels shown under each footer button (Telegram-style).
   const micLabel = (audioEnabled ?? false)
@@ -156,6 +160,7 @@ export const CallFooter: FC<FooterProps> = ({ ref, children, vm }) => {
       ? t("call_controls.loudspeaker")
       : t("call_controls.earpiece");
   const endLabel = t("call_controls.end");
+  const flipCameraLabel = t("call_controls.flip_camera");
 
   const withLabel = (
     key: string,
@@ -297,6 +302,15 @@ export const CallFooter: FC<FooterProps> = ({ ref, children, vm }) => {
 
   if (audioOutputButton)
     buttons.push(withLabel("loudspeaker", loudspeakerLabel, audioOutputButton));
+
+  if (switchCamera !== undefined)
+    buttons.push(
+      withLabel(
+        "switch_camera",
+        flipCameraLabel,
+        <SwitchCameraButton size={buttonSize} onClick={switchCamera} />,
+      ),
+    );
 
   if (hangup)
     buttons.push(

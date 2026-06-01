@@ -346,6 +346,8 @@ export interface CallViewModel {
   toggleSpotlightExpanded$: Behavior<(() => void) | null>;
   gridMode$: Behavior<GridMode>;
   setGridMode: (value: GridMode) => void;
+  swapOneOnOneTiles: () => void;
+  switchCamera$: Behavior<(() => void) | null>;
 
   // header/footer visibility
   showHeader$: Behavior<boolean>;
@@ -1148,9 +1150,12 @@ export function createCallViewModel$(
     }),
   );
 
+  const swapOneOnOneTiles$ = new Subject<void>();
+  const oneOnOneTilesSwapped$ = createToggle$(scope, false, swapOneOnOneTiles$);
+
   const oneOnOneLandscapeLayoutMedia$: Observable<OneOnOneLandscapeLayoutMedia | null> =
-    oneOnOneLayoutMedia$.pipe(
-      map((media) => {
+    combineLatest([oneOnOneLayoutMedia$, oneOnOneTilesSwapped$]).pipe(
+      map(([media, swapped]) => {
         if (media === null) return null;
         return media.remote.type === "ringing"
           ? {
@@ -1162,8 +1167,8 @@ export function createCallViewModel$(
           : {
               type: "one-on-one-landscape" as const,
               edgeToEdge: false,
-              spotlight: media.remote,
-              pip: media.local,
+              spotlight: swapped ? media.local : media.remote,
+              pip: swapped ? media.remote : media.local,
             };
       }),
     );
@@ -1172,12 +1177,23 @@ export function createCallViewModel$(
     oneOnOneLayoutMedia$.pipe(
       switchMap((media) => {
         if (media === null) return of(null);
-        return media.local.videoEnabled$.pipe(
-          map((videoEnabled) => ({
+        return combineLatest([
+          media.local.videoEnabled$,
+          oneOnOneTilesSwapped$,
+        ]).pipe(
+          map(([videoEnabled, swapped]) => ({
             type: "one-on-one-portrait" as const,
             edgeToEdge: true as const,
-            spotlight: media.remote,
-            pip: videoEnabled ? media.local : undefined,
+            spotlight:
+              videoEnabled && swapped && media.remote.type !== "ringing"
+                ? media.local
+                : media.remote,
+            pip:
+              videoEnabled && media.remote.type !== "ringing"
+                ? swapped
+                  ? media.remote
+                  : media.local
+                : undefined,
           })),
         );
       }),
@@ -1734,6 +1750,18 @@ export function createCallViewModel$(
     toggleSpotlightExpanded$: toggleSpotlightExpanded$,
     gridMode$: gridMode$,
     setGridMode: setGridMode,
+    swapOneOnOneTiles: (): void => swapOneOnOneTiles$.next(),
+    switchCamera$: scope.behavior(
+      userMedia$.pipe(
+        switchMap((userMedia) => {
+          const local = userMedia.find(
+            (m): m is WrappedUserMediaViewModel & LocalUserMediaViewModel =>
+              m.type === "user" && m.local,
+          );
+          return local ? local.switchCamera$ : of(null);
+        }),
+      ),
+    ),
     layout$: layout$,
     localMatrixLivekitMember$,
     matrixLivekitMembers$: scope.behavior(

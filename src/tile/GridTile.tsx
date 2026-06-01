@@ -28,7 +28,6 @@ import {
   VisibilityOnIcon,
   UserProfileIcon,
   VolumeOffSolidIcon,
-  SwitchCameraSolidIcon,
   VideoCallSolidIcon,
   VoiceCallSolidIcon,
   EndCallIcon,
@@ -64,6 +63,7 @@ interface TileProps {
   mxcAvatarUrl: string | undefined;
   showNameTags: boolean;
   focusable: boolean;
+  "data-one-on-one-pip"?: boolean;
 }
 
 interface RingingMediaTileProps extends TileProps {
@@ -270,7 +270,6 @@ const LocalUserMediaTile: FC<LocalUserMediaTileProps> = ({
   const { t } = useTranslation();
   const mirror = useBehavior(vm.mirror$);
   const alwaysShow = useBehavior(vm.alwaysShow$);
-  const switchCamera = useBehavior(vm.switchCamera$);
   const focusUrl = useBehavior(vm.focusUrl$);
 
   const latestAlwaysShow = useLatest(alwaysShow);
@@ -288,18 +287,6 @@ const LocalUserMediaTile: FC<LocalUserMediaTileProps> = ({
       vm={vm}
       playbackMuted={false}
       mirror={mirror}
-      primaryButton={
-        switchCamera === null ? undefined : (
-          <button
-            className={styles.switchCamera}
-            aria-label={t("switch_camera")}
-            onClick={switchCamera}
-            tabIndex={focusable ? undefined : -1}
-          >
-            <SwitchCameraSolidIcon aria-hidden width={20} height={20} />
-          </button>
-        )
-      }
       menuStart={
         <ToggleMenuItem
           Icon={VisibilityOnIcon}
@@ -401,6 +388,7 @@ interface GridTileProps {
   showSpeakingIndicators: boolean;
   showNameTags: boolean;
   focusable: boolean;
+  "data-one-on-one-pip"?: boolean;
 }
 
 export const GridTile: FC<GridTileProps> = ({

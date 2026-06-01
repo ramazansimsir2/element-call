@@ -24,6 +24,7 @@ import {
   OverflowVerticalIcon,
   VolumeOnSolidIcon,
   VolumeOffSolidIcon,
+  SwitchCameraSolidIcon,
 } from "@vector-im/compound-design-tokens/assets/web/icons";
 
 import styles from "./Button.module.css";
@@ -154,6 +155,23 @@ export const LoudspeakerButton: FC<LoudspeakerButtonProps> = ({
         {...props}
         kind={loudspeakerModeEnabled ? "primary" : "secondary"}
         aria-checked={loudspeakerModeEnabled}
+      />
+    </Tooltip>
+  );
+};
+
+interface SwitchCameraButtonProps extends ComponentPropsWithoutRef<"button"> {
+  size?: "md" | "lg";
+}
+export const SwitchCameraButton: FC<SwitchCameraButtonProps> = (props) => {
+  const { t } = useTranslation();
+  return (
+    <Tooltip label={t("switch_camera")}>
+      <CpdButton
+        iconOnly
+        Icon={SwitchCameraSolidIcon}
+        kind="secondary"
+        {...props}
       />
     </Tooltip>
   );

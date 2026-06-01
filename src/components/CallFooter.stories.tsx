@@ -82,6 +82,7 @@ export const Default: Story = {
     toggleBlur: fn(),
     videoBlurEnabled: true,
     hangup: fn(),
+    switchCamera: undefined,
     buttonSize: "lg",
     showFooter: true,
     hideControls: false,

@@ -8,6 +8,7 @@ Please see LICENSE in the repository root for full details.
 import { type MatrixClient, type Room as MatrixRoom } from "matrix-js-sdk";
 import {
   type FC,
+  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   useCallback,
   useEffect,
@@ -304,19 +305,62 @@ export const InCallView: FC<InCallViewProps> = ({
     }
   }, [ringing, latestPickupPhaseAudio]);
 
-  // iOS Safari doesn't reliably fire `click` on plain <div>s, so we listen
-  // for `pointerup` instead. Scrolls end in `pointercancel`, not `pointerup`,
-  // so this still only fires for taps.
+  const pointerDown = useRef<{ x: number; y: number } | null>(null);
+  const onViewPointerDown = useCallback((e: ReactPointerEvent) => {
+    pointerDown.current = { x: e.clientX, y: e.clientY };
+  }, []);
+
+  // iOS Safari doesn't reliably fire `click` on plain <div>s, so we listen for
+  // `pointerup` instead. A movement threshold keeps PiP drags separate from taps.
   const onViewPointerUp = useCallback(
     (e: ReactPointerEvent) => {
+      const start = pointerDown.current;
+      pointerDown.current = null;
       if (
-        e.pointerType === "touch" &&
-        // If an interactive element was tapped, don't count this as a tap on the screen
-        (e.target as Element).closest?.("button, input") === null
-      )
+        start === null ||
+        Math.hypot(e.clientX - start.x, e.clientY - start.y) > 8
+      ) {
+        return;
+      }
+
+      const target = e.target as Element;
+      if (target.closest?.("button, a, input, [role='button']") !== null)
+        return;
+
+      if (target.closest?.('[data-one-on-one-pip="true"]') !== null) {
+        const slot = target
+          .closest('[data-one-on-one-pip="true"]')
+          ?.closest("[data-size]");
+        if (slot?.getAttribute("data-size") === "sm") {
+          vm.tapScreen();
+        } else {
+          vm.swapOneOnOneTiles();
+        }
+      } else if (e.pointerType === "touch") {
         vm.tapScreen();
+      }
     },
     [vm],
+  );
+
+  const onViewDoubleClick = useCallback(
+    (e: ReactMouseEvent) => {
+      const target = e.target as Element;
+      if (
+        target.closest?.(
+          "button, a, input, [role='button'], [data-one-on-one-pip='true']",
+        ) !== null
+      ) {
+        return;
+      }
+      if (
+        layout.type === "one-on-one-landscape" ||
+        layout.type === "one-on-one-portrait"
+      ) {
+        vm.swapOneOnOneTiles();
+      }
+    },
+    [layout.type, vm],
   );
 
   const onPointerMove = useCallback(
@@ -433,7 +477,9 @@ export const InCallView: FC<InCallViewProps> = ({
 
   const earpieceOverlay = (
     <EarpieceOverlay
-      show={earpieceMode && !reconnecting && layout.type !== "one-on-one-portrait"}
+      show={
+        earpieceMode && !reconnecting && layout.type !== "one-on-one-portrait"
+      }
       onBackToVideoPressed={audioOutputSwitcher?.switch}
     />
   );
@@ -453,6 +499,12 @@ export const InCallView: FC<InCallViewProps> = ({
   // need to remove them from the accessibility tree and block focus.
   const contentObscured = reconnecting || earpieceMode;
 
+  const pipModel =
+    layout.type === "one-on-one-landscape" ||
+    layout.type === "one-on-one-portrait"
+      ? layout.pip
+      : undefined;
+
   const Tile = useMemo(
     () =>
       function Tile({
@@ -470,6 +522,7 @@ export const InCallView: FC<InCallViewProps> = ({
         );
         const showSpeakingIndicators = useBehavior(vm.showSpeakingIndicators$);
         const showNameTags = useBehavior(vm.showNameTags$);
+        const oneOnOnePip = model === pipModel;
 
         return model instanceof GridTileViewModel ? (
           <GridTile
@@ -483,6 +536,7 @@ export const InCallView: FC<InCallViewProps> = ({
             showSpeakingIndicators={showSpeakingIndicators}
             showNameTags={showNameTags}
             focusable={!contentObscured}
+            data-one-on-one-pip={oneOnOnePip || undefined}
           />
         ) : (
           <SpotlightTile
@@ -500,7 +554,7 @@ export const InCallView: FC<InCallViewProps> = ({
           />
         );
       },
-    [vm, openProfile, contentObscured],
+    [vm, openProfile, contentObscured, pipModel],
   );
 
   const layouts = useMemo(() => {
@@ -623,6 +677,8 @@ export const InCallView: FC<InCallViewProps> = ({
       className={styles.inRoom}
       data-layout={layout.type}
       ref={containerRef}
+      onDoubleClick={onViewDoubleClick}
+      onPointerDown={onViewPointerDown}
       onPointerUp={onViewPointerUp}
       onPointerMove={onPointerMove}
       onPointerOut={onPointerOut}
