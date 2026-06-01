@@ -19,7 +19,7 @@ Please see LICENSE in the repository root for full details.
 .callerInfo {
   position: absolute;
   inset-inline: 0;
-  inset-block-start: 60%;
+  inset-block-start: 52%;
   display: flex;
   flex-direction: column;
   align-items: center;

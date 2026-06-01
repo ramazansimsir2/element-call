@@ -12,7 +12,10 @@ Please see LICENSE in the repository root for full details.
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* Lift the avatar/name block to match the calling screen (avatar centered at
+  ~40% of the viewport, not dead center) so there is no jump between screens. */
+  justify-content: flex-start;
+  padding-block-start: calc(40vh - 56px);
   gap: var(--cpd-space-4x);
   /* Same blue gradient as the call view so it covers the connecting grid tile
   seamlessly; sits below the header/footer (overlay layer) so they stay usable. */

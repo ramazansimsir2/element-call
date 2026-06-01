@@ -50,7 +50,9 @@ Please see LICENSE in the repository root for full details.
 
 .avatar {
   position: absolute;
-  top: 50%;
+  /* vertical position overridable per layout via --media-view-avatar-top
+  (default 50%, unchanged for all existing callers) */
+  top: var(--media-view-avatar-top, 50%);
   left: 50%;
   /* scale is overridable per layout via --media-view-avatar-scale (default 1,
   unchanged for all existing callers); scales letter + image together so it

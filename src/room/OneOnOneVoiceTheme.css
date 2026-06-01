@@ -50,6 +50,9 @@ body[data-ec-voice-call="true"] [class*="_inRoom_"] {
    (scales letter + image together; default elsewhere stays 1). */
 body[data-ec-voice-call="true"] [data-layout="one-on-one-portrait"] {
   --media-view-avatar-scale: 0.68;
+  /* Lift the avatar higher up the screen (Telegram-style), instead of dead
+     center. The caller name/status block below it is positioned to match. */
+  --media-view-avatar-top: 40%;
 }
 
 /* AppBar (back button, room title, menu) — rendered OUTSIDE the call view and
