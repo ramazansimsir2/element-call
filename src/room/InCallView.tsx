@@ -613,6 +613,23 @@ export const InCallView: FC<InCallViewProps> = ({
       onPointerMove={onPointerMove}
       onPointerOut={onPointerOut}
     >
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 10000,
+          background: "#d22",
+          color: "#fff",
+          padding: "2px 12px",
+          fontWeight: 700,
+          fontSize: "13px",
+          borderRadius: "0 0 6px 6px",
+        }}
+      >
+        cloudflare test
+      </div>
       {header}
       {audioParticipants.map(({ livekitRoom, url, participants }) => (
         <LivekitRoomAudioRenderer
