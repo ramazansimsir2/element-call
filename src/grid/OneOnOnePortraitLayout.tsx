@@ -6,7 +6,13 @@ SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 Please see LICENSE in the repository root for full details.
 */
 
-import { type FC, type ReactNode, useCallback } from "react";
+import {
+  type FC,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import classNames from "classnames";
 import { useTranslation } from "react-i18next";
 import { VoiceCallSolidIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
@@ -39,6 +45,42 @@ const OneOnOneCallingStatus: FC<{ media: RingingMediaViewModel }> = ({
   );
 };
 
+// Counts up from when the remote participant connects (mount), shown as mm:ss
+// (or h:mm:ss past an hour) so it's clear the call is live — like Telegram.
+const OneOnOneCallTimer: FC = () => {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    const start = Date.now();
+    const id = setInterval(
+      () => setSeconds(Math.floor((Date.now() - start) / 1000)),
+      1000,
+    );
+    return (): void => clearInterval(id);
+  }, []);
+  const pad = (n: number): string => n.toString().padStart(2, "0");
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  const text = h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+  return (
+    <div className={styles.callDuration}>
+      <svg
+        width={16}
+        height={16}
+        viewBox="0 0 18 18"
+        fill="currentColor"
+        aria-hidden
+      >
+        <rect x="2" y="11" width="2.5" height="5" rx="1" />
+        <rect x="6.5" y="8" width="2.5" height="8" rx="1" />
+        <rect x="11" y="5" width="2.5" height="11" rx="1" />
+        <rect x="15.5" y="2" width="2.5" height="14" rx="1" />
+      </svg>
+      {text}
+    </div>
+  );
+};
+
 const OneOnOneCallerInfo: FC<{ media: MediaViewModel }> = ({ media }) => {
   const name = useBehavior(media.displayName$);
   // ringing → "Aranıyor…"; local user in the spotlight (still connecting, no
@@ -53,6 +95,8 @@ const OneOnOneCallerInfo: FC<{ media: MediaViewModel }> = ({ media }) => {
           <VoiceCallSolidIcon aria-hidden width={20} height={20} />
           Bağlanıyor…
         </div>
+      ) : media.type === "user" ? (
+        <OneOnOneCallTimer />
       ) : null}
     </div>
   );

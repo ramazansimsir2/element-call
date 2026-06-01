@@ -46,6 +46,17 @@ Please see LICENSE in the repository root for full details.
   text-shadow: 0 1px 3px rgb(0 0 0 / 25%);
 }
 
+.callDuration {
+  display: flex;
+  align-items: center;
+  gap: var(--cpd-space-1x);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+}
+
 .pip {
   position: absolute;
   inset: var(--cpd-space-4x);
