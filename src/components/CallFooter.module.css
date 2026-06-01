@@ -95,6 +95,16 @@ Please see LICENSE in the repository root for full details.
   text-overflow: ellipsis;
 }
 
+/* Slightly larger footer call buttons (48px → 56px). */
+.buttons [class*="_button_"] {
+  block-size: var(--cpd-space-14x) !important;
+  inline-size: var(--cpd-space-14x) !important;
+}
+.buttons [class*="_button_"] > svg {
+  block-size: var(--cpd-space-7x) !important;
+  inline-size: var(--cpd-space-7x) !important;
+}
+
 .layout {
   grid-area: layout;
   justify-self: end;
