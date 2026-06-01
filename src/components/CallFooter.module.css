@@ -123,6 +123,13 @@ Once we exceed 500 we hide everything except the buttons.
     grid-template-areas: "buttons buttons buttons";
   }
 
+  /* On phones the buttons span the full width — spread them out evenly instead
+  of clustering in the centre. */
+  .buttons {
+    justify-self: stretch;
+    justify-content: space-between;
+  }
+
   .settingsOnlyShowNarrow {
     display: inherit;
   }
