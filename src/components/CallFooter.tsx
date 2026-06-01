@@ -144,6 +144,31 @@ export const CallFooter: FC<FooterProps> = ({ ref, children, vm }) => {
   const buttonSize = useBehavior(vm.buttonSize$);
   const showLogo = useBehavior(vm.showLogo$);
 
+  // Short, state-aware labels shown under each footer button (Telegram-style).
+  const micLabel = (audioEnabled ?? false)
+    ? t("call_controls.mute")
+    : t("call_controls.unmute");
+  const videoLabel = t("call_controls.camera");
+  const screenLabel = t("call_controls.screen");
+  const reactionLabel = t("common.reaction");
+  const loudspeakerLabel =
+    audioOutputSwitcher?.targetOutput === "earpiece"
+      ? t("call_controls.loudspeaker")
+      : t("call_controls.earpiece");
+  const endLabel = t("call_controls.end");
+
+  const withLabel = (
+    key: string,
+    label: string,
+    button: JSX.Element,
+    className?: string,
+  ): JSX.Element => (
+    <div key={key} className={classNames(styles.labeledButton, className)}>
+      {button}
+      <span className={styles.buttonLabel}>{label}</span>
+    </div>
+  );
+
   const buttons: JSX.Element[] = [];
 
   if (openSettings !== undefined) {
@@ -162,81 +187,99 @@ export const CallFooter: FC<FooterProps> = ({ ref, children, vm }) => {
 
   if ((audioOptions?.length ?? 0) > 0) {
     buttons.push(
-      <MediaMuteAndSwitchButton
-        title={"Mic Source"}
-        key="audio"
-        iconsAndLabels="audio"
-        enabled={audioEnabled ?? false}
-        onMuteClick={toggleAudio}
-        data-testid="incall_mute"
-        options={audioOptions}
-        selectedOption={selectedAudio}
-        onSelect={selectAudioButtonOption}
-      />,
+      withLabel(
+        "audio",
+        micLabel,
+        <MediaMuteAndSwitchButton
+          title={"Mic Source"}
+          iconsAndLabels="audio"
+          enabled={audioEnabled ?? false}
+          onMuteClick={toggleAudio}
+          data-testid="incall_mute"
+          options={audioOptions}
+          selectedOption={selectedAudio}
+          onSelect={selectAudioButtonOption}
+        />,
+      ),
     );
   } else {
     buttons.push(
-      <MicButton
-        size={buttonSize}
-        key="audio"
-        enabled={audioEnabled ?? false}
-        onClick={toggleAudio}
-        disabled={toggleAudio === undefined}
-        data-testid="incall_mute"
-      />,
+      withLabel(
+        "audio",
+        micLabel,
+        <MicButton
+          size={buttonSize}
+          enabled={audioEnabled ?? false}
+          onClick={toggleAudio}
+          disabled={toggleAudio === undefined}
+          data-testid="incall_mute"
+        />,
+      ),
     );
   }
 
   if ((videoOptions?.length ?? 0) > 0) {
     buttons.push(
-      <MediaMuteAndSwitchButton
-        title={"Camera Source"}
-        key="video"
-        iconsAndLabels="video"
-        enabled={videoEnabled ?? false}
-        onMuteClick={toggleVideo}
-        options={videoOptions}
-        selectedOption={selectedVideo}
-        onSelect={selectVideoButtonOption}
-        videoBlurToggleClick={toggleBlur}
-        videoBlurEnabled={videoBlurEnabled}
-      />,
+      withLabel(
+        "video",
+        videoLabel,
+        <MediaMuteAndSwitchButton
+          title={"Camera Source"}
+          iconsAndLabels="video"
+          enabled={videoEnabled ?? false}
+          onMuteClick={toggleVideo}
+          options={videoOptions}
+          selectedOption={selectedVideo}
+          onSelect={selectVideoButtonOption}
+          videoBlurToggleClick={toggleBlur}
+          videoBlurEnabled={videoBlurEnabled}
+        />,
+      ),
     );
   } else {
     buttons.push(
-      <VideoButton
-        size={buttonSize}
-        key="video"
-        enabled={videoEnabled ?? false}
-        onClick={toggleVideo}
-        disabled={toggleVideo === undefined}
-        data-testid="incall_videomute"
-      />,
+      withLabel(
+        "video",
+        videoLabel,
+        <VideoButton
+          size={buttonSize}
+          enabled={videoEnabled ?? false}
+          onClick={toggleVideo}
+          disabled={toggleVideo === undefined}
+          data-testid="incall_videomute"
+        />,
+      ),
     );
   }
 
   if (toggleScreenSharing !== undefined) {
     buttons.push(
-      <ShareScreenButton
-        size={buttonSize}
-        key="share_screen"
-        className={styles.shareScreen}
-        enabled={sharingScreen ?? false}
-        onClick={toggleScreenSharing}
-        data-testid="incall_screenshare"
-      />,
+      withLabel(
+        "share_screen",
+        screenLabel,
+        <ShareScreenButton
+          size={buttonSize}
+          enabled={sharingScreen ?? false}
+          onClick={toggleScreenSharing}
+          data-testid="incall_screenshare"
+        />,
+        styles.shareScreen,
+      ),
     );
   }
 
   if (reactionIdentifier && reactionData) {
     buttons.push(
-      <ReactionToggleButton
-        size={buttonSize}
-        reactionData={reactionData}
-        key="raise_hand"
-        className={styles.raiseHand}
-        identifier={reactionIdentifier}
-      />,
+      withLabel(
+        "raise_hand",
+        reactionLabel,
+        <ReactionToggleButton
+          size={buttonSize}
+          reactionData={reactionData}
+          identifier={reactionIdentifier}
+        />,
+        styles.raiseHand,
+      ),
     );
   }
 
@@ -252,16 +295,20 @@ export const CallFooter: FC<FooterProps> = ({ ref, children, vm }) => {
     );
   }, [audioOutputSwitcher, buttonSize]);
 
-  if (audioOutputButton) buttons.push(audioOutputButton);
+  if (audioOutputButton)
+    buttons.push(withLabel("loudspeaker", loudspeakerLabel, audioOutputButton));
 
   if (hangup)
     buttons.push(
-      <EndCallButton
-        size={buttonSize}
-        key="end_call"
-        onClick={hangup}
-        data-testid="incall_leave"
-      />,
+      withLabel(
+        "end_call",
+        endLabel,
+        <EndCallButton
+          size={buttonSize}
+          onClick={hangup}
+          data-testid="incall_leave"
+        />,
+      ),
     );
 
   const logoDebugContainer = (

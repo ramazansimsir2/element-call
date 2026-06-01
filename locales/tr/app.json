@@ -32,6 +32,15 @@
     "reconnect_button": "Yeniden bağlan",
     "survey_prompt": "Nasıl geçti?"
   },
+  "call_controls": {
+    "camera": "Kamera",
+    "earpiece": "Ahize",
+    "end": "Bitir",
+    "loudspeaker": "Hoparlör",
+    "mute": "Sessize Al",
+    "screen": "Ekran",
+    "unmute": "Sesi Aç"
+  },
   "call_name": "Aramanın adı",
   "common": {
     "analytics": "Analiz",

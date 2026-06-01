@@ -33,6 +33,15 @@
     "reconnect_button": "Reconnect",
     "survey_prompt": "How did it go?"
   },
+  "call_controls": {
+    "camera": "Camera",
+    "earpiece": "Earpiece",
+    "end": "End",
+    "loudspeaker": "Speaker",
+    "mute": "Mute",
+    "screen": "Share",
+    "unmute": "Unmute"
+  },
   "call_name": "Name of call",
   "common": {
     "analytics": "Analytics",
