@@ -127,7 +127,7 @@ Once we exceed 500 we hide everything except the buttons.
   of clustering in the centre. */
   .buttons {
     justify-self: stretch;
-    justify-content: space-between;
+    justify-content: space-evenly;
   }
 
   .settingsOnlyShowNarrow {
