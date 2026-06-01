@@ -497,7 +497,9 @@ export const InCallView: FC<InCallViewProps> = ({
 
   // If the reconnecting toast or earpiece overlay obscures the media tiles, we
   // need to remove them from the accessibility tree and block focus.
-  const contentObscured = reconnecting || earpieceMode;
+  const contentObscured =
+    reconnecting ||
+    (earpieceMode && layout.type !== "one-on-one-portrait");
 
   const pipModel =
     layout.type === "one-on-one-landscape" ||

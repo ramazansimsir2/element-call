@@ -116,10 +116,17 @@ export const Avatar: FC<Props> = ({
         if (stale) {
           return;
         }
+        // Default/generated avatars come back as SVG silhouettes; show the nicer
+        // letter avatar instead by treating an SVG as "no avatar". Real uploaded
+        // photos (PNG/JPEG/…) are still shown.
+        if (blob.type === "image/svg+xml") {
+          setAvatarUrl(undefined);
+          return;
+        }
         objectUrl = URL.createObjectURL(blob);
         setAvatarUrl(objectUrl);
       })
-      .catch((ex) => {
+      .catch(() => {
         if (stale) {
           return;
         }
@@ -173,6 +180,19 @@ async function getAvatarFromServer(
   return blob;
 }
 
+// Sniff an image MIME type from the leading bytes. Needed because the widget API
+// returns raw bytes with no content type, and <img> cannot render an SVG (or some
+// other formats) from a typeless blob URL — SVG specifically requires
+// image/svg+xml.
+function sniffImageMime(bytes: Uint8Array): string {
+  if (bytes[0] === 0x3c) return "image/svg+xml"; // "<" → SVG/XML
+  if (bytes[0] === 0x89 && bytes[1] === 0x50) return "image/png";
+  if (bytes[0] === 0xff && bytes[1] === 0xd8) return "image/jpeg";
+  if (bytes[0] === 0x47 && bytes[1] === 0x49) return "image/gif"; // "GI"
+  if (bytes[0] === 0x52 && bytes[1] === 0x49) return "image/webp"; // "RI" (RIFF)
+  return "application/octet-stream";
+}
+
 // export for testing
 export async function getAvatarFromWidgetAPI(
   api: WidgetApi,
@@ -185,9 +205,10 @@ export async function getAvatarFromWidgetAPI(
   if (file instanceof Blob) {
     return file;
   } else if (typeof file === "string") {
-    // it is a base64 string
+    // it is a base64 string; tag the blob with a sniffed MIME type so <img> can
+    // render it (SVG avatars in particular need image/svg+xml).
     const bytes = Uint8Array.from(atob(file), (c) => c.charCodeAt(0));
-    return new Blob([bytes]);
+    return new Blob([bytes], { type: sniffImageMime(bytes) });
   }
   throw new Error(
     "Downloaded file format is not supported: " + typeof file + "",
