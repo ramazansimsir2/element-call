@@ -53,6 +53,17 @@ export const RoomPage: FC = (): ReactNode => {
     logger.error("No room specified");
   }
 
+  // For 1:1 voice calls (audio intent), flag <body> so the loading/connecting
+  // screens and the AppBar can be themed blue to match the voice call screen
+  // (see src/room/OneOnOneVoiceTheme.css). Group calls use a video intent.
+  useEffect(() => {
+    if (urlParams.callIntent !== "audio") return;
+    document.body.dataset.ecVoiceCall = "true";
+    return (): void => {
+      delete document.body.dataset.ecVoiceCall;
+    };
+  }, [urlParams.callIntent]);
+
   const { registerPasswordlessUser } = useRegisterPasswordlessUser();
   const [isRegistering, setIsRegistering] = useState(false);
 

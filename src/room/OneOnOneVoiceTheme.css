@@ -6,94 +6,87 @@ Please see LICENSE in the repository root for full details.
 */
 
 /*
-Telegram-style theme for the 1:1 portrait (voice) call screen ONLY.
+Telegram-style theme for the 1:1 VOICE call experience.
 
-Everything is scoped to [data-layout="one-on-one-portrait"] (set on the InCallView
-root .inRoom div), so group/spotlight/landscape/lobby are unaffected. Modals
-(Settings, Rageshake) render through a React portal to <body> (see src/Modal.tsx),
-so they live OUTSIDE .inRoom and none of this leaks into them.
+Activation: RoomPage sets data-ec-voice-call="true" on <body> when the call
+intent is "audio" (a voice call). This covers the WHOLE flow — the loading
+screen, the brief "connecting" (grid) screen, and the call screen — so there is
+no white flash before the blue voice screen. Group calls use a "video" intent,
+so the flag is never set for them and they are completely unaffected.
 
-The End/hangup button stays red: it carries compound's _destructive_ class which
-we explicitly exclude below, and its red background comes from the separate
---cpd-color-bg-critical-* tokens.
+IMPORTANT: custom-property (token) overrides are placed on subtree containers
+(_inRoom_, _page_, _bar_), NOT on <body> itself, because the Settings/Rageshake
+modals are portaled to <body> (see src/Modal.tsx). Only background-color is set
+on <body> (it does not bleed into the modals, which paint their own background).
 */
 
-[data-layout="one-on-one-portrait"] {
-  /* Darker Telegram-blue gradient, full-bleed top to bottom. */
-  background: linear-gradient(180deg, #2aa8e8 0%, #176fb0 55%, #0a4e80 100%);
-
-  /* Make the avatar tile and the header/footer fades transparent so the gradient
-     covers the whole screen (those fades use --cpd-color-bg-canvas-default). */
-  --video-tile-background: transparent;
-  --cpd-color-bg-canvas-default: transparent;
-
-  /* On the blue screen, text and header icons read white. */
-  --cpd-color-text-primary: #ffffff;
-  --cpd-color-icon-primary: #ffffff;
-  --stopgap-color-on-solid-accent: #ffffff; /* End/hangup icon: white on the red button */
-
-  /* Smaller centered avatar — scales letter + image together so it stays centered
-     (default elsewhere stays 1; see MediaView.module.css). */
-  --media-view-avatar-scale: 0.68;
-}
-
-/*
-During the outgoing "Calling…" state, MediaView overlays the avatar with a status
-badge and applies a translucent multiply blend (opacity 50% + mix-blend-mode:
-multiply), which tints a profile photo blue and washes it out. Neutralise that on
-the voice screen so the avatar/photo shows at full strength while ringing.
-*/
-[data-layout="one-on-one-portrait"] [class*="_translucent_"] {
-  opacity: 1 !important;
-  mix-blend-mode: normal !important;
-}
-
-/*
-The call status ("Aranıyor…") is now rendered by OneOnOnePortraitLayout directly
-under the name, so hide MediaView's own top-left status badge to avoid showing it
-twice (and in the wrong place).
-*/
-[data-layout="one-on-one-portrait"] [class*="_status_"] {
-  display: none !important;
-}
-
-/*
-The app-level AppBar (back button, room title, menu) is rendered OUTSIDE the call
-view (src/AppBar.tsx) and is transparent, so the white page background shows
-through it. OneOnOnePortraitLayout sets data-ec-voice-call on <body> while
-mounted; here we paint the page (and thus the bar) the top blue and make the bar's
-text/icons white. Token overrides are scoped to the bar subtree so the portaled
-modals (which live under <body> but outside the bar) are unaffected.
-*/
+/* Page background: the top blue. Shows through the transparent loading screen
+   (FullScreenView) and the transparent AppBar, and matches the call view's
+   gradient top so there is no seam at the header. */
 body[data-ec-voice-call="true"] {
   background-color: #2aa8e8 !important;
 }
 
+/* White text on the blue loading screen ("Yükleniyor"). */
+body[data-ec-voice-call="true"] [class*="_page_"] {
+  --cpd-color-text-primary: #ffffff;
+}
+
+/* The call view (any layout: grid while connecting, one-on-one once ringing):
+   blue gradient, transparent tile backgrounds, white text/icons. */
+body[data-ec-voice-call="true"] [class*="_inRoom_"] {
+  background: linear-gradient(180deg, #2aa8e8 0%, #176fb0 55%, #0a4e80 100%);
+  --video-tile-background: transparent;
+  /* Kill the footer's white bottom fade (it fades to the canvas colour). The End
+  icon stays white via the stopgap override below; the frosted buttons keep their
+  own !important background. */
+  --cpd-color-bg-canvas-default: transparent;
+  --cpd-color-text-primary: #ffffff;
+  --cpd-color-icon-primary: #ffffff;
+  --stopgap-color-on-solid-accent: #ffffff; /* End/hangup icon stays white on red */
+}
+
+/* Smaller centered avatar only on the actual one-on-one voice screen
+   (scales letter + image together; default elsewhere stays 1). */
+body[data-ec-voice-call="true"] [data-layout="one-on-one-portrait"] {
+  --media-view-avatar-scale: 0.68;
+}
+
+/* AppBar (back button, room title, menu) — rendered OUTSIDE the call view and
+   transparent, so the blue <body> shows through. Tint its text/icons white and
+   drop its white readability fade. Token overrides scoped to the bar subtree so
+   the portaled modals are unaffected. */
 body[data-ec-voice-call="true"] [class*="_bar_"] {
+  color: #ffffff;
   --cpd-color-text-primary: #ffffff;
   --cpd-color-icon-primary: #ffffff;
 }
-
-/* Remove the bar's white readability fade (it fades to the canvas colour). */
 body[data-ec-voice-call="true"] [class*="_bar_"]::before {
   display: none !important;
 }
 
-/*
-Unified footer call buttons (everything except the red End button): translucent
-frosted circles with a white outline and white icons. This makes every button
-identical regardless of compound's primary/secondary state, so the camera-off
-("primary") button matches the rest. !important is used to win over compound's
-per-state rules deterministically. The :not(_destructive_) keeps End red.
-*/
-[data-layout="one-on-one-portrait"]
+/* Footer call buttons (all except the red End button): translucent frosted
+   circles with white icons, identical across primary/secondary states. */
+body[data-ec-voice-call="true"]
   [class*="_button_"]:not([class*="_destructive_"]) {
   background: rgba(255, 255, 255, 0.16) !important;
   border: 1px solid rgba(255, 255, 255, 0.5) !important;
 }
-
-[data-layout="one-on-one-portrait"]
+body[data-ec-voice-call="true"]
   [class*="_button_"]:not([class*="_destructive_"])
   > svg {
   color: #ffffff !important;
+}
+
+/* During "Calling…", MediaView tints the avatar with a translucent multiply
+   blend (which tints photos blue and washes them out). Neutralise it. */
+body[data-ec-voice-call="true"] [class*="_translucent_"] {
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+}
+
+/* The status ("Aranıyor…") is rendered by OneOnOnePortraitLayout under the name,
+   so hide MediaView's own top-left status badge to avoid duplication. */
+body[data-ec-voice-call="true"] [class*="_status_"] {
+  display: none !important;
 }

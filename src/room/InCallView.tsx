@@ -70,6 +70,7 @@ import { LivekitRoomAudioRenderer } from "../livekit/MatrixAudioRenderer.tsx";
 import { muteAllAudio$ } from "../state/MuteAllAudioModel.ts";
 import { useMediaDevices } from "../MediaDevicesContext.ts";
 import { EarpieceOverlay } from "./EarpieceOverlay.tsx";
+import { ConnectingOverlay } from "./ConnectingOverlay.tsx";
 import { useAppBarHidden, useAppBarSecondaryButton } from "../AppBar.tsx";
 import { useBehavior } from "../useBehavior.ts";
 import { Toast } from "../Toast.tsx";
@@ -238,7 +239,7 @@ export const InCallView: FC<InCallViewProps> = ({
   // Merge the refs so they can attach to the same element
   const containerRef = useMergedRefs(containerRef1, containerRef2);
 
-  const { showControls, header: headerStyle } = useUrlParams();
+  const { showControls, header: headerStyle, callIntent } = useUrlParams();
 
   const muteAllAudio = useBehavior(muteAllAudio$);
 
@@ -436,6 +437,17 @@ export const InCallView: FC<InCallViewProps> = ({
       onBackToVideoPressed={audioOutputSwitcher?.switch}
     />
   );
+
+  // For 1:1 voice calls, while connecting (before the ringing/one-on-one layout
+  // settles) show a Telegram-style "Bağlanıyor…" screen instead of the default
+  // grid tile of the local user.
+  const connectingOverlay =
+    callIntent === "audio" &&
+    layout.type !== "one-on-one-portrait" &&
+    !reconnecting &&
+    !earpieceMode ? (
+      <ConnectingOverlay matrixInfo={matrixInfo} />
+    ) : null;
 
   // If the reconnecting toast or earpiece overlay obscures the media tiles, we
   // need to remove them from the accessibility tree and block focus.
@@ -646,6 +658,7 @@ export const InCallView: FC<InCallViewProps> = ({
       <CallEventAudioRenderer vm={vm} muted={muteAllAudio} />
       <ReactionsAudioRenderer vm={vm} muted={muteAllAudio} />
       {reconnectingToast}
+      {connectingOverlay}
       {earpieceOverlay}
       <ReactionsOverlay vm={vm} />
       {footer}
