@@ -72,6 +72,7 @@ import { muteAllAudio$ } from "../state/MuteAllAudioModel.ts";
 import { useMediaDevices } from "../MediaDevicesContext.ts";
 import { EarpieceOverlay } from "./EarpieceOverlay.tsx";
 import { ConnectingOverlay } from "./ConnectingOverlay.tsx";
+import { useRemoteVoiceLevel } from "./voice/useRemoteVoiceLevel.ts";
 import { useAppBarHidden, useAppBarSecondaryButton } from "../AppBar.tsx";
 import { useBehavior } from "../useBehavior.ts";
 import { Toast } from "../Toast.tsx";
@@ -281,6 +282,15 @@ export const InCallView: FC<InCallViewProps> = ({
   const setSettingsOpen = useBehavior(vm.setSettingsOpen$);
   const earpieceMode = useBehavior(vm.earpieceMode$);
   const audioOutputSwitcher = useBehavior(vm.audioOutputSwitcher$);
+
+  // Telegram-style voice-reactive blob rings: publish the remote loudness while
+  // the 1:1 voice screen is up (works in both earpiece and loudspeaker modes).
+  useRemoteVoiceLevel(
+    audioParticipants,
+    callIntent === "audio" &&
+      layout.type === "one-on-one-portrait" &&
+      !reconnecting,
+  );
 
   const fatalCallError = useBehavior(vm.fatalError$);
   // Stop the rendering and throw for the error boundary

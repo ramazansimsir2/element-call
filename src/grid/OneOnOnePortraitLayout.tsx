@@ -19,6 +19,7 @@ import { type CallLayout } from "./CallLayout";
 import styles from "./OneOnOnePortraitLayout.module.css";
 import { type DragCallback, useUpdateLayout } from "./Grid";
 import { useBehavior } from "../useBehavior";
+import { VoiceBlobs } from "../room/voice/VoiceBlobs";
 
 // Telegram-style caller info shown under the avatar on the 1:1 portrait (voice)
 // screen: big name, then the call status ("Aranıyor…") beneath it. Split into
@@ -79,6 +80,7 @@ export const makeOneOnOnePortraitLayout: CallLayout<
     useUpdateLayout();
     return (
       <div ref={ref} className={styles.layer}>
+        <VoiceBlobs />
         <Slot
           className={styles.spotlight}
           id="spotlight"

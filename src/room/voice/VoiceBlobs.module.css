@@ -1,0 +1,40 @@
+/*
+Copyright 2026 Element Creations Ltd.
+
+SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+Please see LICENSE in the repository root for full details.
+*/
+
+/* Hidden by default; only shown on the 1:1 voice call screen (the <body> flag is
+   set by RoomPage for audio-intent calls), so group/video calls are unaffected. */
+.blobs {
+  display: none;
+  position: absolute;
+  inset-block-start: var(--media-view-avatar-top, 40%);
+  inset-inline-start: 50%;
+  inline-size: 320px;
+  block-size: 320px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+body[data-ec-voice-call="true"] .blobs {
+  display: block;
+}
+
+.blobWrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0);
+}
+
+.blobRing {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+}
