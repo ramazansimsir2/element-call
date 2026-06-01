@@ -1,0 +1,77 @@
+/*
+Copyright 2026 Element Creations Ltd.
+
+SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+Please see LICENSE in the repository root for full details.
+*/
+
+/*
+Telegram-style theme for the 1:1 portrait (voice) call screen ONLY.
+
+Everything is scoped to [data-layout="one-on-one-portrait"] (set on the InCallView
+root .inRoom div), so group/spotlight/landscape/lobby are unaffected. Modals
+(Settings, Rageshake) render through a React portal to <body> (see src/Modal.tsx),
+so they live OUTSIDE .inRoom and none of this leaks into them.
+
+The End/hangup button stays red: it carries compound's _destructive_ class which
+we explicitly exclude below, and its red background comes from the separate
+--cpd-color-bg-critical-* tokens.
+*/
+
+[data-layout="one-on-one-portrait"] {
+  /* Darker Telegram-blue gradient, full-bleed top to bottom. */
+  background: linear-gradient(180deg, #2aa8e8 0%, #176fb0 55%, #0a4e80 100%);
+
+  /* Make the avatar tile and the header/footer fades transparent so the gradient
+     covers the whole screen (those fades use --cpd-color-bg-canvas-default). */
+  --video-tile-background: transparent;
+  --cpd-color-bg-canvas-default: transparent;
+
+  /* On the blue screen, text and header icons read white. */
+  --cpd-color-text-primary: #ffffff;
+  --cpd-color-icon-primary: #ffffff;
+  --stopgap-color-on-solid-accent: #ffffff; /* End/hangup icon: white on the red button */
+
+  /* Smaller centered avatar — scales letter + image together so it stays centered
+     (default elsewhere stays 1; see MediaView.module.css). */
+  --media-view-avatar-scale: 0.68;
+}
+
+/*
+During the outgoing "Calling…" state, MediaView overlays the avatar with a status
+badge and applies a translucent multiply blend (opacity 50% + mix-blend-mode:
+multiply), which tints a profile photo blue and washes it out. Neutralise that on
+the voice screen so the avatar/photo shows at full strength while ringing.
+*/
+[data-layout="one-on-one-portrait"] [class*="_translucent_"] {
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+}
+
+/*
+The call status ("Aranıyor…") is now rendered by OneOnOnePortraitLayout directly
+under the name, so hide MediaView's own top-left status badge to avoid showing it
+twice (and in the wrong place).
+*/
+[data-layout="one-on-one-portrait"] [class*="_status_"] {
+  display: none !important;
+}
+
+/*
+Unified footer call buttons (everything except the red End button): translucent
+frosted circles with a white outline and white icons. This makes every button
+identical regardless of compound's primary/secondary state, so the camera-off
+("primary") button matches the rest. !important is used to win over compound's
+per-state rules deterministically. The :not(_destructive_) keeps End red.
+*/
+[data-layout="one-on-one-portrait"]
+  [class*="_button_"]:not([class*="_destructive_"]) {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+}
+
+[data-layout="one-on-one-portrait"]
+  [class*="_button_"]:not([class*="_destructive_"])
+  > svg {
+  color: #ffffff !important;
+}

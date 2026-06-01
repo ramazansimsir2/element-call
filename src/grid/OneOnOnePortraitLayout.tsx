@@ -6,14 +6,55 @@ SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 Please see LICENSE in the repository root for full details.
 */
 
-import { type ReactNode, useCallback } from "react";
+import { type FC, type ReactNode, useCallback } from "react";
 import classNames from "classnames";
+import { useTranslation } from "react-i18next";
+import { VoiceCallSolidIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
 
 import { type OneOnOnePortraitLayout as OneOnOnePortraitLayoutModel } from "../state/layout-types.ts";
+import { type SpotlightTileViewModel } from "../state/TileViewModel.ts";
+import { type MediaViewModel } from "../state/media/MediaViewModel.ts";
+import { type RingingMediaViewModel } from "../state/media/RingingMediaViewModel.ts";
 import { type CallLayout } from "./CallLayout";
 import styles from "./OneOnOnePortraitLayout.module.css";
 import { type DragCallback, useUpdateLayout } from "./Grid";
 import { useBehavior } from "../useBehavior";
+
+// Telegram-style caller info shown under the avatar on the 1:1 portrait (voice)
+// screen: big name, then the call status ("Aranıyor…") beneath it. Split into
+// sub-components so hook order stays stable regardless of media/ringing state.
+const OneOnOneCallingStatus: FC<{ media: RingingMediaViewModel }> = ({
+  media,
+}) => {
+  const { t } = useTranslation();
+  const pickupState = useBehavior(media.pickupState$);
+  return (
+    <div className={styles.callingStatus}>
+      <VoiceCallSolidIcon aria-hidden width={20} height={20} />
+      {pickupState === "ringing"
+        ? t("video_tile.calling")
+        : t("video_tile.call_ended")}
+    </div>
+  );
+};
+
+const OneOnOneCallerInfo: FC<{ media: MediaViewModel }> = ({ media }) => {
+  const name = useBehavior(media.displayName$);
+  return (
+    <div className={styles.callerInfo}>
+      <div className={styles.bigName}>{name}</div>
+      {media.type === "ringing" && <OneOnOneCallingStatus media={media} />}
+    </div>
+  );
+};
+
+const OneOnOneName: FC<{ spotlight: SpotlightTileViewModel }> = ({
+  spotlight,
+}) => {
+  const media = useBehavior(spotlight.media$);
+  const media0 = media[0];
+  return media0 ? <OneOnOneCallerInfo media={media0} /> : null;
+};
 
 /**
  * An implementation of the "one-on-one" layout for portrait screens, in which
@@ -34,6 +75,7 @@ export const makeOneOnOnePortraitLayout: CallLayout<
           id="spotlight"
           model={model.spotlight}
         />
+        <OneOnOneName spotlight={model.spotlight} />
       </div>
     );
   },

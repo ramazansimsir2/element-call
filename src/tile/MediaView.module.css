@@ -52,7 +52,10 @@ Please see LICENSE in the repository root for full details.
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  /* scale is overridable per layout via --media-view-avatar-scale (default 1,
+  unchanged for all existing callers); scales letter + image together so it
+  stays centered */
+  transform: translate(-50%, -50%) scale(var(--media-view-avatar-scale, 1));
   pointer-events: none;
 }
 

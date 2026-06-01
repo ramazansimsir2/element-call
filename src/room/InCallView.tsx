@@ -30,6 +30,7 @@ import { HeaderStyle, useUrlParams } from "../UrlParams";
 import { useCallViewKeyboardShortcuts } from "../useCallViewKeyboardShortcuts";
 import { widget } from "../widget";
 import styles from "./InCallView.module.css";
+import "./OneOnOneVoiceTheme.css";
 import { GridTile } from "../tile/GridTile";
 import { SettingsModal, defaultSettingsTab } from "../settings/SettingsModal";
 import { useRageshakeRequestModal } from "../settings/submit-rageshake";
@@ -431,7 +432,7 @@ export const InCallView: FC<InCallViewProps> = ({
 
   const earpieceOverlay = (
     <EarpieceOverlay
-      show={earpieceMode && !reconnecting}
+      show={earpieceMode && !reconnecting && layout.type !== "one-on-one-portrait"}
       onBackToVideoPressed={audioOutputSwitcher?.switch}
     />
   );
@@ -608,6 +609,7 @@ export const InCallView: FC<InCallViewProps> = ({
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       className={styles.inRoom}
+      data-layout={layout.type}
       ref={containerRef}
       onPointerUp={onViewPointerUp}
       onPointerMove={onPointerMove}

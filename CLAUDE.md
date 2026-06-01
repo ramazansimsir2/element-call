@@ -42,6 +42,15 @@ uyması gereken kuralları tanımlar. Lütfen her görevden önce bu kuralları 
   **önce benden onay iste.** Onay almadan büyük mantıksal değişiklik uygulama.
 - Küçük, yerel ve geri alınabilir değişiklikleri tercih et.
 
+### 4) Git commit/push işlerini bana bırak
+
+- **Git commit, push, amend, reset, rebase, merge gibi işlemleri kendiliğinden YAPMA.**
+  Bu işleri ben yönetirim.
+- Sadece dosyaları düzenle; commit/push işini bana bırak. Gerekiyorsa "şunu
+  commit'leyeyim mi?" diye sor, ben onaylarsam yap.
+- Çalışma ağacını (working tree) düzenlemen yeterli; geçmişe (git history)
+  dokunma.
+
 ## Onay Gerektiren Durumlar — Özet
 
 Aşağıdaki durumlarda **dur ve bana sor**, ben onaylayınca devam et:
@@ -50,6 +59,7 @@ Aşağıdaki durumlarda **dur ve bana sor**, ben onaylayınca devam et:
 2. Çakışma olmadan yapılamıyorsa.
 3. Önemli/geniş bir mantıksal değişiklik gerekiyorsa.
 4. Merge / rebase / upstream güncellemesi gibi git işlemleri gerekiyorsa.
+5. Herhangi bir **git commit / push** gerekiyorsa (bunları ben yaparım).
 
 ## Faydalı Komutlar
 
