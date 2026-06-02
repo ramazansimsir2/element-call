@@ -286,11 +286,26 @@ export const InCallView: FC<InCallViewProps> = ({
   const earpieceMode = useBehavior(vm.earpieceMode$);
   const audioOutputSwitcher = useBehavior(vm.audioOutputSwitcher$);
 
+  // The Telegram-style voice UI only applies to a 1:1 voice call. participantCount
+  // counts ALL members including the local user (alone = 1, 1:1 = 2), so once it
+  // reaches 3+ the call has grown into a group and should fall back to the default
+  // group UI.
+  const isVoice1on1 = callIntent === "audio" && participantCount <= 2;
+
+  // Drop the blue voice theme (body flag) when the call becomes a group, so the
+  // group grid uses the default UI instead of the blue 1:1 styling. RoomPage sets
+  // the flag for the loading/connecting phases; this refines it during the call.
+  useEffect(() => {
+    if (callIntent !== "audio") return;
+    if (isVoice1on1) document.body.dataset.ecVoiceCall = "true";
+    else delete document.body.dataset.ecVoiceCall;
+  }, [callIntent, isVoice1on1]);
+
   // Telegram-style voice-reactive blob rings: publish the remote loudness while
   // the 1:1 voice screen is up (works in both earpiece and loudspeaker modes).
   useRemoteVoiceLevel(
     audioParticipants,
-    callIntent === "audio" &&
+    isVoice1on1 &&
       (layout.type === "one-on-one-portrait" || layout.type === "pip") &&
       !reconnecting,
   );
@@ -505,9 +520,12 @@ export const InCallView: FC<InCallViewProps> = ({
 
   // For 1:1 voice calls, while connecting (before the ringing/one-on-one layout
   // settles) show a Telegram-style "Bağlanıyor…" screen instead of the default
-  // grid tile of the local user.
+  // grid tile of the local user. participantCount counts ALL members including
+  // the local user, so this only applies before anyone else has joined (<=1);
+  // once the call has 3+ members it is a group (grid) and must NOT be covered.
   const connectingOverlay =
     callIntent === "audio" &&
+    participantCount <= 1 &&
     layout.type !== "one-on-one-portrait" &&
     layout.type !== "pip" &&
     !reconnecting ? (
@@ -609,7 +627,7 @@ export const InCallView: FC<InCallViewProps> = ({
           aria-hidden={contentObscured}
         />
       );
-      if (callIntent !== "audio") return tile;
+      if (!isVoice1on1) return tile;
       // Voice pip: add the voice-reactive blobs (behind the avatar) and the
       // name + duration, like the full screen.
       return (
