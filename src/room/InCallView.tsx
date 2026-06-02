@@ -488,7 +488,10 @@ export const InCallView: FC<InCallViewProps> = ({
   const earpieceOverlay = (
     <EarpieceOverlay
       show={
-        earpieceMode && !reconnecting && layout.type !== "one-on-one-portrait"
+        earpieceMode &&
+        !reconnecting &&
+        layout.type !== "one-on-one-portrait" &&
+        callIntent !== "audio"
       }
       onBackToVideoPressed={audioOutputSwitcher?.switch}
     />
@@ -500,8 +503,8 @@ export const InCallView: FC<InCallViewProps> = ({
   const connectingOverlay =
     callIntent === "audio" &&
     layout.type !== "one-on-one-portrait" &&
-    !reconnecting &&
-    !earpieceMode ? (
+    layout.type !== "pip" &&
+    !reconnecting ? (
       <ConnectingOverlay matrixInfo={matrixInfo} />
     ) : null;
 
@@ -509,7 +512,9 @@ export const InCallView: FC<InCallViewProps> = ({
   // need to remove them from the accessibility tree and block focus.
   const contentObscured =
     reconnecting ||
-    (earpieceMode && layout.type !== "one-on-one-portrait");
+    (earpieceMode &&
+      layout.type !== "one-on-one-portrait" &&
+      callIntent !== "audio");
 
   const pipModel =
     layout.type === "one-on-one-landscape" ||
