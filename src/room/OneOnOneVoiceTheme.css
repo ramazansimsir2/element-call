@@ -243,14 +243,14 @@ body[data-ec-voice-call="true"] [class*="_status_"] {
   display: none !important;
 }
 
-/* Settings bottom sheet (the ⋮ menu) — keep its default WHITE background, but
-   recolor the green accent (checkboxes, radio selection, slider, accent
-   text/buttons) to our blue, and give the tab row a light-blue band. Applied to
-   ALL drawers so the menu looks identical everywhere (voice/video, 1:1/group);
-   this stylesheet is loaded with the call view, and SettingsModal/Modal/Tabs are
-   not edited. */
+/* Accent recolor for ALL call drawers (the ⋮ settings menu AND the device-picker
+   menu): green→blue for checkboxes, radios, toggles, the slider, primary buttons,
+   and accent icons/text. These tokens do NOT paint the menu-row background, so
+   applying them broadly is safe and keeps both menus' interactive accents
+   consistent. The light-blue row band is set separately, scoped to the settings
+   modal, below. */
 body [class*="_drawer_"] {
-  /* checkboxes / radios (compound "accent") */
+  /* checkboxes / radios / toggles (compound "accent") */
   --cpd-color-bg-accent-rest: #2aa8e8;
   --cpd-color-bg-accent-hovered: #1f93cf;
   --cpd-color-bg-accent-pressed: #1a82b8;
@@ -264,10 +264,30 @@ body [class*="_drawer_"] {
   --cpd-color-bg-action-primary-rest: #2aa8e8;
   --cpd-color-bg-action-primary-hovered: #1f93cf;
   --cpd-color-bg-action-primary-pressed: #1a82b8;
-  /* light-blue band behind the tab row + the active tab's pill (instead of the
-     default grey/subtle shade) */
+}
+
+/* Light-blue band behind the tab row + active tab pill — ONLY in the settings
+   Modal (tabbed). These secondary/subtle tokens ALSO paint compound menu-row
+   backgrounds, so they must NOT reach the device-picker Menu (a _drawer_ but not
+   _tabbed_) or its rows turn a garish light-blue. SettingsModal passes `tabbed`,
+   so our Modal adds the _tabbed_ class to its drawer/dialog. */
+body [class*="_tabbed_"] {
   --cpd-color-bg-subtle-secondary: #e8f4fc;
   --cpd-color-bg-action-secondary-rest: #e8f4fc;
   --cpd-color-bg-action-secondary-hovered: #d3eafa;
   --cpd-color-bg-action-secondary-pressed: #c4e2f7;
+}
+
+/* Device-picker Menu (the chevron next to the mute/camera button) — a compound
+   Menu that renders as its own bottom sheet (_drawer_, but NOT _tabbed_). Its
+   rows now keep the clean default white background (no light-blue, since the
+   settings theme above no longer leaks in). Just tint the selected row's
+   checkmark our blue for a subtle, elegant touch. The leading device icon is
+   wrapped by a Radix Slot that merges our _itemIcon_ class onto it, so exclude
+   it; the trailing checkmark (and the loading spinner) is a bare svg. */
+body
+  [class*="_drawer_"]:not([class*="_tabbed_"])
+  [class*="_item_"]
+  svg:not([class*="_itemIcon_"]) {
+  color: #2aa8e8 !important;
 }
