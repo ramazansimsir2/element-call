@@ -93,3 +93,32 @@ body[data-ec-voice-call="true"] [class*="_translucent_"] {
 body[data-ec-voice-call="true"] [class*="_status_"] {
   display: none !important;
 }
+
+/* Settings bottom sheet (opened from the ⋮ menu during a voice call): keep its
+   default WHITE background, but recolor the green accent — checkboxes, radio
+   selection (Loudspeaker/Handset), the slider, and accent text/buttons — to the
+   call's blue. The drawer portals to <body> (which carries the voice flag), so
+   this is scoped to that flag + the drawer subtree; group / lobby / desktop
+   settings stay untouched and SettingsModal/Modal/Tabs are not edited. */
+body[data-ec-voice-call="true"] [class*="_drawer_"] {
+  /* checkboxes / radios (compound "accent") */
+  --cpd-color-bg-accent-rest: #2aa8e8;
+  --cpd-color-bg-accent-hovered: #1f93cf;
+  --cpd-color-bg-accent-pressed: #1a82b8;
+  --cpd-color-icon-accent-primary: #2aa8e8;
+  --cpd-color-text-action-accent: #2aa8e8;
+  --cpd-color-border-accent: #2aa8e8;
+  /* white checkmark/tick on the blue checkbox fill (Input.module.css strokes the
+     check with this stopgap token) */
+  --stopgap-color-on-solid-accent: #ffffff;
+  /* custom Slider highlight + handle (and any primary buttons) */
+  --cpd-color-bg-action-primary-rest: #2aa8e8;
+  --cpd-color-bg-action-primary-hovered: #1f93cf;
+  --cpd-color-bg-action-primary-pressed: #1a82b8;
+  /* light-blue band behind the tab row + the active tab's pill (instead of the
+     default grey/subtle shade) */
+  --cpd-color-bg-subtle-secondary: #e8f4fc;
+  --cpd-color-bg-action-secondary-rest: #e8f4fc;
+  --cpd-color-bg-action-secondary-hovered: #d3eafa;
+  --cpd-color-bg-action-secondary-pressed: #c4e2f7;
+}

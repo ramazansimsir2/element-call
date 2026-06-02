@@ -158,12 +158,17 @@
       "effect_volume_description": "Tepkilerin ve el kaldırmaların çaldığı ses düzeyini ayarlayın.",
       "effect_volume_label": "Ses efekti sesi"
     },
+    "background_blur_header": "Arka Plan",
+    "background_blur_label": "Videonun arka planını bulanıklaştır",
+    "blur_not_supported_by_browser": "(Arka plan bulanıklaştırma bu cihazda desteklenmiyor.)",
     "developer_tab_title": "Geliştirici",
     "devices": {
       "camera": "Kamera",
       "camera_numbered": "Kamera {{n}}",
       "default": "Varsayılan",
       "default_named": "Varsayılan <2>({{name}})</2>",
+      "handset": "Ahize",
+      "loudspeaker": "Hoparlör",
       "microphone": "Mikrofon",
       "microphone_numbered": "Mikrofon {{n}}",
       "speaker": "Hoparlör",
