@@ -203,6 +203,7 @@ export const SettingsIconButton: FC<SettingsIconButtonProps> = ({
   return (
     <Tooltip label={t("common.settings")}>
       <IconButton
+        size="24px"
         className={classNamesForScreenWidth(className, showForScreenWidth)}
         {...props}
       >

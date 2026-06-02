@@ -59,6 +59,17 @@ body[data-ec-voice-group="true"] [class*="_inRoom_"] {
      through and the cards stay cohesive with the background. */
   --video-tile-background: rgba(8, 48, 84, 0.55);
 }
+
+/* Name tag (mic icon + name pill) on the group tiles: frosted dark pill with
+   white text/icon, to match the blue theme instead of the bright default white
+   pill. */
+body[data-ec-voice-group="true"] [class*="_nameTag_"] {
+  background-color: rgba(0, 0, 0, 0.42) !important;
+  color: #ffffff !important;
+}
+body[data-ec-voice-group="true"] [class*="_nameTag_"] svg {
+  color: #ffffff !important;
+}
 /* Footer: drop the white bottom fade and use white labels/icons, like voice.
    --stopgap-color-on-solid-accent keeps the red End button's icon white. */
 body[data-ec-voice-group="true"] [class*="_footer_"] {
@@ -100,6 +111,16 @@ body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"])
 body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"])
   [class*="_bar_"]::before {
   display: none !important;
+}
+
+/* PiP (collapse) + more (⋮) buttons in the top bar: frosted circles matching the
+   footer buttons. They are compound IconButtons (class _icon-button_), which the
+   footer's [class*="_button_"] rule does not match, so target them directly. */
+body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"])
+  [class*="_bar_"] button {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 50% !important;
 }
 
 /* Footer call buttons (all except the red End button): translucent frosted
