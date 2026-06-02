@@ -6,13 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 Please see LICENSE in the repository root for full details.
 */
 
-import {
-  type FC,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { type FC, type ReactNode, useCallback } from "react";
 import classNames from "classnames";
 import { useTranslation } from "react-i18next";
 import { VoiceCallSolidIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
@@ -26,6 +20,10 @@ import styles from "./OneOnOnePortraitLayout.module.css";
 import { type DragCallback, useUpdateLayout } from "./Grid";
 import { useBehavior } from "../useBehavior";
 import { VoiceBlobs } from "../room/voice/VoiceBlobs";
+import {
+  useCallDuration,
+  formatCallDuration,
+} from "../room/voice/useCallDuration";
 
 // Telegram-style caller info shown under the avatar on the 1:1 portrait (voice)
 // screen: big name, then the call status ("Aranıyor…") beneath it. Split into
@@ -48,20 +46,7 @@ const OneOnOneCallingStatus: FC<{ media: RingingMediaViewModel }> = ({
 // Counts up from when the remote participant connects (mount), shown as mm:ss
 // (or h:mm:ss past an hour) so it's clear the call is live — like Telegram.
 const OneOnOneCallTimer: FC = () => {
-  const [seconds, setSeconds] = useState(0);
-  useEffect(() => {
-    const start = Date.now();
-    const id = setInterval(
-      () => setSeconds(Math.floor((Date.now() - start) / 1000)),
-      1000,
-    );
-    return (): void => clearInterval(id);
-  }, []);
-  const pad = (n: number): string => n.toString().padStart(2, "0");
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  const text = h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+  const text = formatCallDuration(useCallDuration());
   return (
     <div className={styles.callDuration}>
       <svg

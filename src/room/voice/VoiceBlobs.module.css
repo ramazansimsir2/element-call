@@ -22,6 +22,20 @@ body[data-ec-voice-call="true"] .blobs {
   display: block;
 }
 
+/* Picture-in-picture variant: centered on the (centered) pip avatar, scaled down
+   for the small window, and behind the avatar (negative z within the pip's own
+   stacking context). Only rendered for voice pip, so no display gate is needed. */
+.blobsPip {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  inline-size: 320px;
+  block-size: 320px;
+  transform: translate(-50%, -50%) scale(0.55);
+  pointer-events: none;
+  z-index: -1;
+}
+
 .blobWrapper {
   position: absolute;
   inset: 0;

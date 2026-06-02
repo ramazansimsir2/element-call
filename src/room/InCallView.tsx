@@ -73,6 +73,9 @@ import { useMediaDevices } from "../MediaDevicesContext.ts";
 import { EarpieceOverlay } from "./EarpieceOverlay.tsx";
 import { ConnectingOverlay } from "./ConnectingOverlay.tsx";
 import { useRemoteVoiceLevel } from "./voice/useRemoteVoiceLevel.ts";
+import { PipCallerInfo } from "./voice/PipCallerInfo.tsx";
+import { VoiceBlobs } from "./voice/VoiceBlobs.tsx";
+import { resetCallDuration } from "./voice/useCallDuration.ts";
 import { useAppBarHidden, useAppBarSecondaryButton } from "../AppBar.tsx";
 import { useBehavior } from "../useBehavior.ts";
 import { Toast } from "../Toast.tsx";
@@ -288,9 +291,12 @@ export const InCallView: FC<InCallViewProps> = ({
   useRemoteVoiceLevel(
     audioParticipants,
     callIntent === "audio" &&
-      layout.type === "one-on-one-portrait" &&
+      (layout.type === "one-on-one-portrait" || layout.type === "pip") &&
       !reconnecting,
   );
+
+  // Reset the shared call-duration timer when the call view unmounts (call ends).
+  useEffect(() => resetCallDuration, []);
 
   const fatalCallError = useBehavior(vm.fatalError$);
   // Stop the rendering and throw for the error boundary
@@ -589,7 +595,7 @@ export const InCallView: FC<InCallViewProps> = ({
   const showFooter = useBehavior(footerVm.showFooter$);
   const renderContent = (): JSX.Element => {
     if (layout.type === "pip") {
-      return (
+      const tile = (
         <SpotlightTile
           className={classNames(styles.tile, styles.maximised)}
           vm={layout.spotlight}
@@ -602,6 +608,24 @@ export const InCallView: FC<InCallViewProps> = ({
           focusable={!contentObscured}
           aria-hidden={contentObscured}
         />
+      );
+      if (callIntent !== "audio") return tile;
+      // Voice pip: add the voice-reactive blobs (behind the avatar) and the
+      // name + duration, like the full screen.
+      return (
+        <div
+          style={{
+            position: "relative",
+            zIndex: 0,
+            flexGrow: 1,
+            display: "flex",
+            minHeight: 0,
+          }}
+        >
+          <VoiceBlobs variant="pip" />
+          {tile}
+          <PipCallerInfo spotlight={layout.spotlight} />
+        </div>
       );
     }
 

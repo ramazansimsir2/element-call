@@ -17,7 +17,12 @@ import { VoiceBlobRing } from "./VoiceBlobRing";
  * `--ec-voice-speak` CSS variable (see useRemoteVoiceLevel). Visibility is gated
  * by CSS to the voice call screen, so group/video calls are unaffected.
  */
-export const VoiceBlobs: FC = () => {
+interface Props {
+  /** "pip" renders a smaller, centered variant for the picture-in-picture view. */
+  variant?: "full" | "pip";
+}
+
+export const VoiceBlobs: FC<Props> = ({ variant = "full" }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<number>(0);
 
@@ -41,7 +46,10 @@ export const VoiceBlobs: FC = () => {
   }, []);
 
   return (
-    <div className={styles.blobs} aria-hidden>
+    <div
+      className={variant === "pip" ? styles.blobsPip : styles.blobs}
+      aria-hidden
+    >
       <div ref={wrapperRef} className={styles.blobWrapper}>
         <VoiceBlobRing radius={100} points={7} alpha={0.2} deform={0.16} />
         <VoiceBlobRing radius={86} points={8} alpha={0.3} deform={0.16} />
