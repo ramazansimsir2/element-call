@@ -21,9 +21,10 @@ on <body> (it does not bleed into the modals, which paint their own background).
 */
 
 /* Page background: the top blue. Shows through the transparent loading screen
-   (FullScreenView) and the transparent AppBar, and matches the call view's
-   gradient top so there is no seam at the header. */
-body[data-ec-voice-call="true"] {
+   (FullScreenView) and the transparent AppBar (so the top bar reads blue in both
+   the 1:1 and the group voice screens), and matches the call view's gradient top
+   so there is no seam at the header. */
+body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"]) {
   background-color: #2aa8e8 !important;
 }
 
@@ -46,6 +47,37 @@ body[data-ec-voice-call="true"] [class*="_inRoom_"] {
   --stopgap-color-on-solid-accent: #ffffff; /* End/hangup icon stays white on red */
 }
 
+/* Group voice call (3+ members): same blue background + same blue top bar / footer
+   (white text, frosted buttons, no white fade) as the 1:1 voice screen — but the
+   default grey group tiles are kept (the avatar/transparent-tile theme is NOT
+   applied). The shared bar/button rules below also match on data-ec-voice-group.
+   Set by InCallView's data-ec-voice-group flag. */
+body[data-ec-voice-group="true"] [class*="_inRoom_"] {
+  background: linear-gradient(180deg, #2aa8e8 0%, #176fb0 55%, #0a4e80 100%);
+  /* Tone the tiles down (the default light-grey cards look garish on blue) and
+     darken them so the pale avatars stand out. Translucent so the gradient shows
+     through and the cards stay cohesive with the background. */
+  --video-tile-background: rgba(8, 48, 84, 0.55);
+}
+/* Footer: drop the white bottom fade and use white labels/icons, like voice.
+   --stopgap-color-on-solid-accent keeps the red End button's icon white. */
+body[data-ec-voice-group="true"] [class*="_footer_"] {
+  background: none !important;
+  --cpd-color-text-primary: #ffffff;
+  --cpd-color-icon-primary: #ffffff;
+  --stopgap-color-on-solid-accent: #ffffff;
+}
+
+/* Speaking border: the default blue→teal gradient blends into the blue group
+   background, so use a contrasting green→teal that clearly stands out. */
+body[data-ec-voice-group="true"] [class*="_speaking_"]::before {
+  background: linear-gradient(
+    119deg,
+    rgba(52, 211, 153, 0.95) 0%,
+    rgba(45, 212, 191, 0.95) 100%
+  ) !important;
+}
+
 /* Smaller centered avatar only on the actual one-on-one voice screen
    (scales letter + image together; default elsewhere stays 1). */
 body[data-ec-voice-call="true"] [data-layout="one-on-one-portrait"] {
@@ -59,23 +91,25 @@ body[data-ec-voice-call="true"] [data-layout="one-on-one-portrait"] {
    transparent, so the blue <body> shows through. Tint its text/icons white and
    drop its white readability fade. Token overrides scoped to the bar subtree so
    the portaled modals are unaffected. */
-body[data-ec-voice-call="true"] [class*="_bar_"] {
+body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"])
+  [class*="_bar_"] {
   color: #ffffff;
   --cpd-color-text-primary: #ffffff;
   --cpd-color-icon-primary: #ffffff;
 }
-body[data-ec-voice-call="true"] [class*="_bar_"]::before {
+body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"])
+  [class*="_bar_"]::before {
   display: none !important;
 }
 
 /* Footer call buttons (all except the red End button): translucent frosted
    circles with white icons, identical across primary/secondary states. */
-body[data-ec-voice-call="true"]
+body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"])
   [class*="_button_"]:not([class*="_destructive_"]) {
   background: rgba(255, 255, 255, 0.16) !important;
   border: 1px solid rgba(255, 255, 255, 0.5) !important;
 }
-body[data-ec-voice-call="true"]
+body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"])
   [class*="_button_"]:not([class*="_destructive_"])
   > svg {
   color: #ffffff !important;
@@ -94,13 +128,13 @@ body[data-ec-voice-call="true"] [class*="_status_"] {
   display: none !important;
 }
 
-/* Settings bottom sheet (opened from the ⋮ menu during a voice call): keep its
-   default WHITE background, but recolor the green accent — checkboxes, radio
-   selection (Loudspeaker/Handset), the slider, and accent text/buttons — to the
-   call's blue. The drawer portals to <body> (which carries the voice flag), so
-   this is scoped to that flag + the drawer subtree; group / lobby / desktop
-   settings stay untouched and SettingsModal/Modal/Tabs are not edited. */
-body[data-ec-voice-call="true"] [class*="_drawer_"] {
+/* Settings bottom sheet (the ⋮ menu) — keep its default WHITE background, but
+   recolor the green accent (checkboxes, radio selection, slider, accent
+   text/buttons) to our blue, and give the tab row a light-blue band. Applied to
+   ALL drawers so the menu looks identical everywhere (voice/video, 1:1/group);
+   this stylesheet is loaded with the call view, and SettingsModal/Modal/Tabs are
+   not edited. */
+body [class*="_drawer_"] {
   /* checkboxes / radios (compound "accent") */
   --cpd-color-bg-accent-rest: #2aa8e8;
   --cpd-color-bg-accent-hovered: #1f93cf;

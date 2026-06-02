@@ -292,13 +292,22 @@ export const InCallView: FC<InCallViewProps> = ({
   // group UI.
   const isVoice1on1 = callIntent === "audio" && participantCount <= 2;
 
-  // Drop the blue voice theme (body flag) when the call becomes a group, so the
-  // group grid uses the default UI instead of the blue 1:1 styling. RoomPage sets
-  // the flag for the loading/connecting phases; this refines it during the call.
+  // 1:1 voice → full blue theme (data-ec-voice-call). Group voice (3+) → only a
+  // blue background (data-ec-voice-group), keeping the default group tiles/footer.
+  // RoomPage sets data-ec-voice-call for the loading/connecting phases; this
+  // refines it during the call by participant count.
   useEffect(() => {
     if (callIntent !== "audio") return;
-    if (isVoice1on1) document.body.dataset.ecVoiceCall = "true";
-    else delete document.body.dataset.ecVoiceCall;
+    if (isVoice1on1) {
+      document.body.dataset.ecVoiceCall = "true";
+      delete document.body.dataset.ecVoiceGroup;
+    } else {
+      delete document.body.dataset.ecVoiceCall;
+      document.body.dataset.ecVoiceGroup = "true";
+    }
+    return (): void => {
+      delete document.body.dataset.ecVoiceGroup;
+    };
   }, [callIntent, isVoice1on1]);
 
   // Telegram-style voice-reactive blob rings: publish the remote loudness while
