@@ -24,7 +24,11 @@ on <body> (it does not bleed into the modals, which paint their own background).
    (FullScreenView) and the transparent AppBar (so the top bar reads blue in both
    the 1:1 and the group voice screens), and matches the call view's gradient top
    so there is no seam at the header. */
-body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"]) {
+body:is(
+    [data-ec-voice-call="true"],
+    [data-ec-voice-group="true"],
+    [data-ec-lobby="true"]
+  ) {
   background-color: #2aa8e8 !important;
 }
 
@@ -60,6 +64,25 @@ body[data-ec-voice-group="true"] [class*="_inRoom_"] {
   --video-tile-background: rgba(8, 48, 84, 0.55);
 }
 
+/* Call lobby ("join call" screen): blue background. The camera preview area is
+   made transparent so the blue shows through when the camera is off (otherwise it
+   is a big grey block), and text/icons go white. Bar/footer get the shared blue
+   treatment via the :is rules; the join button is restyled below. Set by
+   LobbyView's data-ec-lobby flag. */
+body[data-ec-lobby="true"] [class*="_inRoom_"] {
+  background: linear-gradient(180deg, #2aa8e8 0%, #176fb0 55%, #0a4e80 100%);
+}
+/* Drop VideoPreview's white bottom fade (it shows as white under the join
+   button on the blue lobby). */
+body[data-ec-lobby="true"] [class*="_buttonBar_"] {
+  background: none !important;
+}
+/* "Join call" / "Aramaya katıl" button: our blue instead of the default dark. */
+body[data-ec-lobby="true"] [class*="_join_"]:not([class*="_wait_"]) {
+  background: #2aa8e8 !important;
+  color: #ffffff !important;
+}
+
 /* Name tag (mic icon + name pill) on the group tiles: frosted dark pill with
    white text/icon, to match the blue theme instead of the bright default white
    pill. */
@@ -72,11 +95,62 @@ body[data-ec-voice-group="true"] [class*="_nameTag_"] svg {
 }
 /* Footer: drop the white bottom fade and use white labels/icons, like voice.
    --stopgap-color-on-solid-accent keeps the red End button's icon white. */
-body[data-ec-voice-group="true"] [class*="_footer_"] {
+body:is([data-ec-voice-group="true"], [data-ec-lobby="true"])
+  [class*="_footer_"] {
   background: none !important;
   --cpd-color-text-primary: #ffffff;
   --cpd-color-icon-primary: #ffffff;
   --stopgap-color-on-solid-accent: #ffffff;
+}
+
+/* Mute/camera split buttons (MediaMuteAndSwitchButton): render as ONE wide frosted
+   pill (the original connected design), not two separate circles. The container is
+   the single frosted pill; the inner mute + chevron are just icons (no inner
+   circles), so the chevron is NOT in its own circle. The :not() bumps specificity
+   so these win over the generic footer-button frosting. */
+body:is(
+    [data-ec-voice-call="true"],
+    [data-ec-voice-group="true"],
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"]
+  [class*="_container_"] {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: none !important;
+}
+/* The main mute/camera button: a brighter raised circle so its icon stands out on
+   the pill (like the original). Excludes the chevron (_menuButton_). */
+body:is(
+    [data-ec-voice-call="true"],
+    [data-ec-voice-group="true"],
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"]
+  [class*="_container_"]
+  [class*="_button_"]:not([class*="_menuButton_"]):not([class*="_destructive_"]) {
+  background: rgba(255, 255, 255, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+}
+/* The dropdown chevron: bare icon, no circle. */
+body:is(
+    [data-ec-voice-call="true"],
+    [data-ec-voice-group="true"],
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"]
+  [class*="_container_"]
+  [class*="_menuButton_"]:not([class*="_destructive_"]) {
+  background: transparent !important;
+  border: none !important;
+}
+body:is(
+    [data-ec-voice-call="true"],
+    [data-ec-voice-group="true"],
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"]
+  [class*="_container_"] svg {
+  color: #ffffff !important;
 }
 
 /* Speaking border: the default blue→teal gradient blends into the blue group
@@ -102,13 +176,21 @@ body[data-ec-voice-call="true"] [data-layout="one-on-one-portrait"] {
    transparent, so the blue <body> shows through. Tint its text/icons white and
    drop its white readability fade. Token overrides scoped to the bar subtree so
    the portaled modals are unaffected. */
-body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"])
+body:is(
+    [data-ec-voice-call="true"],
+    [data-ec-voice-group="true"],
+    [data-ec-lobby="true"]
+  )
   [class*="_bar_"] {
   color: #ffffff;
   --cpd-color-text-primary: #ffffff;
   --cpd-color-icon-primary: #ffffff;
 }
-body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"])
+body:is(
+    [data-ec-voice-call="true"],
+    [data-ec-voice-group="true"],
+    [data-ec-lobby="true"]
+  )
   [class*="_bar_"]::before {
   display: none !important;
 }
@@ -116,7 +198,11 @@ body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"])
 /* PiP (collapse) + more (⋮) buttons in the top bar: frosted circles matching the
    footer buttons. They are compound IconButtons (class _icon-button_), which the
    footer's [class*="_button_"] rule does not match, so target them directly. */
-body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"])
+body:is(
+    [data-ec-voice-call="true"],
+    [data-ec-voice-group="true"],
+    [data-ec-lobby="true"]
+  )
   [class*="_bar_"] button {
   background: rgba(255, 255, 255, 0.16) !important;
   border: 1px solid rgba(255, 255, 255, 0.5) !important;
@@ -125,13 +211,21 @@ body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"])
 
 /* Footer call buttons (all except the red End button): translucent frosted
    circles with white icons, identical across primary/secondary states. */
-body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"])
-  [class*="_button_"]:not([class*="_destructive_"]) {
+body:is(
+    [data-ec-voice-call="true"],
+    [data-ec-voice-group="true"],
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"] [class*="_button_"]:not([class*="_destructive_"]) {
   background: rgba(255, 255, 255, 0.16) !important;
   border: 1px solid rgba(255, 255, 255, 0.5) !important;
 }
-body:is([data-ec-voice-call="true"], [data-ec-voice-group="true"])
-  [class*="_button_"]:not([class*="_destructive_"])
+body:is(
+    [data-ec-voice-call="true"],
+    [data-ec-voice-group="true"],
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"] [class*="_button_"]:not([class*="_destructive_"])
   > svg {
   color: #ffffff !important;
 }

@@ -117,6 +117,15 @@ export const LobbyView: FC<Props> = ({
   }, [navigate]);
   const hangup = confineToRoom ? undefined : onLeaveClick;
 
+  // Theme the lobby with the call's blue (see OneOnOneVoiceTheme.css). Removed on
+  // unmount so it doesn't leak into the joined call view.
+  useEffect(() => {
+    document.body.dataset.ecLobby = "true";
+    return (): void => {
+      delete document.body.dataset.ecLobby;
+    };
+  }, []);
+
   const recentsButtonInFooter = useMediaQuery("(max-height: 500px)");
   const recentsButton = !confineToRoom && (
     <Link className={styles.recents} to="/">
