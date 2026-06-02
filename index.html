@@ -17,6 +17,35 @@
       window.global = window;
     </script>
 
+    <!-- Boot background: paint a colour before React/theme load so there is no
+    white flash. Dark by default (the dark theme's --cpd-color-theme-bg); the
+    script below repaints it the voice-call blue for voice calls. -->
+    <style>
+      html {
+        background-color: #101317;
+      }
+    </style>
+    <script>
+      // Voice calls (the `intent` url param is one of the *_voice variants; it
+      // may live in the query string or the hash fragment's query, see
+      // UrlParams.ts) open directly blue instead of flashing dark -> blue.
+      window.__ecVoiceIntent = (function () {
+        try {
+          var hash = window.location.hash || "";
+          var hashQuery =
+            hash.indexOf("?") === -1 ? "" : hash.slice(hash.indexOf("?"));
+          var intent =
+            new URLSearchParams(hashQuery).get("intent") ||
+            new URLSearchParams(window.location.search || "").get("intent");
+          return !!intent && intent.indexOf("voice") !== -1;
+        } catch (e) {
+          return false;
+        }
+      })();
+      if (window.__ecVoiceIntent)
+        document.documentElement.style.backgroundColor = "#2aa8e8";
+    </script>
+
     <% if (packageType === "full") { %>
     <!-- Open graph meta tags -->
 
@@ -41,5 +70,12 @@
   <!-- The default class is: .no-theme {display: none}. It will be overwritten once the app is loaded. -->
   <body class="no-theme">
     <div id="root"></div>
+    <!-- Flag <body> as a voice call before React mounts so its blue (from the
+    statically-loaded OneOnOneVoiceTheme.css) applies the instant the app becomes
+    visible, with no dark frame before RoomPage's effect runs. React then manages
+    this flag normally. -->
+    <script>
+      if (window.__ecVoiceIntent) document.body.dataset.ecVoiceCall = "true";
+    </script>
   </body>
 </html>
