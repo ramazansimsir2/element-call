@@ -292,6 +292,13 @@ export const InCallView: FC<InCallViewProps> = ({
   // group UI.
   const isVoice1on1 = callIntent === "audio" && participantCount <= 2;
 
+  // The calling/connecting phase of a VIDEO call (before the remote joins, so
+  // participantCount is still just us): show the same blue screen as a voice
+  // call for consistency. Once the remote joins (participantCount >= 2) the
+  // video takes over and the flag is removed (see the effect below).
+  const isVideoCalling =
+    callIntent !== "audio" && participantCount <= 1 && !reconnecting;
+
   // 1:1 voice → full blue theme (data-ec-voice-call). Group voice (3+) → only a
   // blue background (data-ec-voice-group), keeping the default group tiles/footer.
   // RoomPage sets data-ec-voice-call for the loading/connecting phases; this
@@ -309,6 +316,17 @@ export const InCallView: FC<InCallViewProps> = ({
       delete document.body.dataset.ecVoiceGroup;
     };
   }, [callIntent, isVoice1on1]);
+
+  // Video call calling/connecting phase → same blue screen as voice. Kept as a
+  // separate effect so the audio/group logic above is untouched; the flag is
+  // removed automatically once the remote joins (isVideoCalling becomes false).
+  useEffect(() => {
+    if (!isVideoCalling) return;
+    document.body.dataset.ecVoiceCall = "true";
+    return (): void => {
+      delete document.body.dataset.ecVoiceCall;
+    };
+  }, [isVideoCalling]);
 
   // Telegram-style voice-reactive blob rings: publish the remote loudness while
   // the 1:1 voice screen is up (works in both earpiece and loudspeaker modes).
@@ -527,13 +545,16 @@ export const InCallView: FC<InCallViewProps> = ({
     />
   );
 
-  // For 1:1 voice calls, while connecting (before the ringing/one-on-one layout
-  // settles) show a Telegram-style "Bağlanıyor…" screen instead of the default
-  // grid tile of the local user. participantCount counts ALL members including
-  // the local user, so this only applies before anyone else has joined (<=1);
-  // once the call has 3+ members it is a group (grid) and must NOT be covered.
+  // While connecting (before the ringing/one-on-one layout settles) show a
+  // Telegram-style "Bağlanıyor…" screen instead of the default grid tile of the
+  // local user. Covers both 1:1 voice and the video calling phase
+  // (isVideoCalling), which otherwise briefly flashes your own camera as a grid
+  // card before the "Görüntülü aranıyor" screen appears. participantCount counts
+  // ALL members including the local user, so this only applies before anyone
+  // else has joined (<=1); once the call has 3+ members it is a group (grid) and
+  // must NOT be covered.
   const connectingOverlay =
-    callIntent === "audio" &&
+    (callIntent === "audio" || isVideoCalling) &&
     participantCount <= 1 &&
     layout.type !== "one-on-one-portrait" &&
     layout.type !== "pip" &&

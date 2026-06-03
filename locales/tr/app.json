@@ -208,6 +208,7 @@
   "video_tile": {
     "always_show": "Her zaman göster",
     "calling": "Aranıyor…",
+    "calling_video": "Görüntülü aranıyor…",
     "camera_starting": "Video paylaşımı başlatılıyor...",
     "change_fit_contain": "Çerçeveye sığdır",
     "collapse": "Daralt",

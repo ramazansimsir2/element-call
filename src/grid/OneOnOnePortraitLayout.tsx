@@ -9,7 +9,10 @@ Please see LICENSE in the repository root for full details.
 import { type FC, type ReactNode, useCallback } from "react";
 import classNames from "classnames";
 import { useTranslation } from "react-i18next";
-import { VoiceCallSolidIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
+import {
+  VideoCallSolidIcon,
+  VoiceCallSolidIcon,
+} from "@vector-im/compound-design-tokens/assets/web/icons";
 
 import { type OneOnOnePortraitLayout as OneOnOnePortraitLayoutModel } from "../state/layout-types.ts";
 import { type SpotlightTileViewModel } from "../state/TileViewModel.ts";
@@ -33,11 +36,17 @@ const OneOnOneCallingStatus: FC<{ media: RingingMediaViewModel }> = ({
 }) => {
   const { t } = useTranslation();
   const pickupState = useBehavior(media.pickupState$);
+  // Indicate a video call with the camera icon + "Görüntülü aranıyor…" so the
+  // (otherwise identical) blue calling screen distinguishes video from voice.
+  const videoCall = useBehavior(media.videoEnabled$);
+  const Icon = videoCall ? VideoCallSolidIcon : VoiceCallSolidIcon;
   return (
     <div className={styles.callingStatus}>
-      <VoiceCallSolidIcon aria-hidden width={20} height={20} />
+      <Icon aria-hidden width={20} height={20} />
       {pickupState === "ringing"
-        ? t("video_tile.calling")
+        ? videoCall
+          ? t("video_tile.calling_video")
+          : t("video_tile.calling")
         : t("video_tile.call_ended")}
     </div>
   );
