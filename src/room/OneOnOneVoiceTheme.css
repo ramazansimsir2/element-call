@@ -278,6 +278,18 @@ body [class*="_tabbed_"] {
   --cpd-color-bg-action-secondary-pressed: #c4e2f7;
 }
 
+/* Remove the white/grey readability fade behind the top bar and the bottom
+   footer in ALL calls (including video). The default gradients fade to
+   --cpd-color-bg-canvas-default (white in the light theme), which looked out of
+   place over the video. The voice screens already drop these via the scoped
+   rules above; these unscoped rules cover the video call too. */
+[class*="_bar_"]::before {
+  display: none !important;
+}
+body [class*="_footer_"] {
+  background: none !important;
+}
+
 /* Device-picker Menu (the chevron next to the mute/camera button) — a compound
    Menu that renders as its own bottom sheet (_drawer_, but NOT _tabbed_). Its
    rows now keep the clean default white background (no light-blue, since the

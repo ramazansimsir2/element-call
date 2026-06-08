@@ -1,0 +1,189 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EC Canli Log</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #0b0e13;
+        color: #d7dde5;
+        font: 13px/1.45 ui-monospace, Consolas, monospace;
+        height: 100%;
+      }
+      #bar {
+        position: sticky;
+        top: 0;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 8px;
+        background: #11161e;
+        border-bottom: 1px solid #222c3a;
+        flex-wrap: wrap;
+      }
+      #bar input {
+        flex: 1;
+        min-width: 140px;
+        background: #0b0e13;
+        color: #d7dde5;
+        border: 1px solid #2a3647;
+        border-radius: 6px;
+        padding: 6px 8px;
+      }
+      #bar button {
+        background: #1d2735;
+        color: #d7dde5;
+        border: 1px solid #2a3647;
+        border-radius: 6px;
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+      #bar button.on {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: #fff;
+      }
+      #stat {
+        color: #7d8aa0;
+      }
+      #log {
+        padding: 8px 10px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .row {
+        padding: 1px 0;
+        border-bottom: 1px solid #141a23;
+      }
+      .t {
+        color: #5f6b7e;
+      }
+      .tag {
+        color: #8b5cf6;
+      }
+      .error {
+        color: #ff6b6b;
+      }
+      .warn {
+        color: #ffb454;
+      }
+      .info {
+        color: #9cdcfe;
+      }
+      .debug {
+        color: #6b7a8d;
+      }
+      .log {
+        color: #cdd6e0;
+      }
+      .hot {
+        background: #23314a;
+        border-radius: 3px;
+        padding: 0 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="bar">
+      <b>EC Canli Log</b>
+      <input id="f" placeholder="filtre (or: callintent|route|leave|error)" />
+      <button id="pause">Durdur</button>
+      <button id="clear">Temizle</button>
+      <button id="wrap" class="on">Otokaydir</button>
+      <span id="stat">baglaniyor...</span>
+    </div>
+    <div id="log"></div>
+    <script>
+      var since = 0,
+        paused = false,
+        autoscroll = true,
+        count = 0;
+      var logEl = document.getElementById("log"),
+        statEl = document.getElementById("stat");
+      var fEl = document.getElementById("f");
+      var HOT =
+        /callintent|intent=|earpiece|speaker|handset|route|join_existing|start_call|leave|disconnect|reconnect|hangup|terminat|sfu|livekit|focus|membership|delayed|to-device|key|error|fail/i;
+      document.getElementById("pause").onclick = function () {
+        paused = !paused;
+        this.classList.toggle("on", paused);
+        this.textContent = paused ? "Devam" : "Durdur";
+      };
+      document.getElementById("clear").onclick = function () {
+        logEl.innerHTML = "";
+      };
+      var wrapBtn = document.getElementById("wrap");
+      wrapBtn.onclick = function () {
+        autoscroll = !autoscroll;
+        this.classList.toggle("on", autoscroll);
+      };
+      function esc(s) {
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+      function add(it) {
+        var flt = fEl.value.trim();
+        if (flt) {
+          try {
+            if (!new RegExp(flt, "i").test(it.msg)) return;
+          } catch (e) {
+            if (it.msg.toLowerCase().indexOf(flt.toLowerCase()) < 0) return;
+          }
+        }
+        var d = new Date(it.t),
+          ts =
+            ("0" + d.getHours()).slice(-2) +
+            ":" +
+            ("0" + d.getMinutes()).slice(-2) +
+            ":" +
+            ("0" + d.getSeconds()).slice(-2) +
+            "." +
+            ("00" + d.getMilliseconds()).slice(-3);
+        var msg = esc(it.msg);
+        if (HOT.test(it.msg)) msg = "<span class=hot>" + msg + "</span>";
+        var row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML =
+          "<span class='t'>" +
+          ts +
+          "</span> <span class='tag'>" +
+          esc(it.tag) +
+          "</span> <span class='" +
+          it.level +
+          "'>" +
+          it.level.toUpperCase() +
+          "</span> " +
+          msg;
+        logEl.appendChild(row);
+        count++;
+        while (logEl.childNodes.length > 3000)
+          logEl.removeChild(logEl.firstChild);
+      }
+      function poll() {
+        fetch("/__logs/data?since=" + since)
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (j) {
+            if (j.items && j.items.length && !paused) {
+              j.items.forEach(add);
+              if (autoscroll) window.scrollTo(0, document.body.scrollHeight);
+            }
+            since = j.last;
+            statEl.textContent = "son seq " + j.last + " | gosterilen " + count;
+          })
+          .catch(function () {
+            statEl.textContent = "baglanti yok (dev server kapali?)";
+          })
+          .finally(function () {
+            setTimeout(poll, 700);
+          });
+      }
+      poll();
+    </script>
+  </body>
+</html>

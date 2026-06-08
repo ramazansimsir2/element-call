@@ -145,10 +145,20 @@ Once we exceed 500 we hide everything except the buttons.
     justify-content: space-between;
   }
 
+  /* Let each button share the available width equally so all of them always
+  fit, no matter how narrow the phone is. Without this, the label widths add up
+  and push the last button ("End") off the screen edge. */
+  .labeledButton {
+    flex: 1 1 0;
+    min-inline-size: 0;
+  }
+
   /* Slightly smaller labels so the wider ones ("Reaction") don't push the
-  columns past the screen edge. Buttons and icons keep their size. */
+  columns past the screen edge. Buttons and icons keep their size. The label is
+  capped to its column and ellipsised instead of widening the column. */
   .buttonLabel {
     font-size: 11px;
+    max-inline-size: 100%;
   }
 
   .settingsOnlyShowNarrow {

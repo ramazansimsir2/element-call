@@ -13,6 +13,9 @@ import {
   type ReactNode,
   type ComponentType,
   type SVGAttributes,
+  useEffect,
+  useRef,
+  useState,
 } from "react";
 import { useTranslation } from "react-i18next";
 import classNames from "classnames";
@@ -96,6 +99,40 @@ export const MediaView: FC<Props> = ({
 
   const avatarSize = Math.round(Math.min(targetWidth, targetHeight) / 2);
 
+  // Keep showing the avatar until the <video> actually has a decoded frame.
+  // Otherwise the empty <video> briefly shows the WebView's built-in grey
+  // play-button placeholder before the first frame arrives.
+  const bgRef = useRef<HTMLDivElement>(null);
+  const [videoReady, setVideoReady] = useState(false);
+  useEffect(() => {
+    setVideoReady(false);
+    if (!(video && videoEnabled)) return;
+    const el = bgRef.current?.querySelector("video");
+    if (!el) return;
+    setVideoReady(el.readyState >= 2);
+    const markReady = (): void => setVideoReady(true);
+    // The frame is momentarily gone (e.g. switching front/back camera): fall
+    // back to the avatar instead of letting the empty <video> show the
+    // WebView's grey play-button placeholder.
+    const markNotReady = (): void => setVideoReady(false);
+    el.addEventListener("loadeddata", markReady);
+    el.addEventListener("canplay", markReady);
+    el.addEventListener("playing", markReady);
+    el.addEventListener("waiting", markNotReady);
+    el.addEventListener("emptied", markNotReady);
+    el.addEventListener("loadstart", markNotReady);
+    return (): void => {
+      el.removeEventListener("loadeddata", markReady);
+      el.removeEventListener("canplay", markReady);
+      el.removeEventListener("playing", markReady);
+      el.removeEventListener("waiting", markNotReady);
+      el.removeEventListener("emptied", markNotReady);
+      el.removeEventListener("loadstart", markNotReady);
+    };
+  }, [video, videoEnabled]);
+
+  const showVideo = Boolean(video && videoEnabled && videoReady);
+
   const warnings = unencryptedWarning && (
     <Tooltip
       label={t("common.unencrypted")}
@@ -124,7 +161,7 @@ export const MediaView: FC<Props> = ({
       data-video-fit={videoFit}
       {...props}
     >
-      <div className={styles.bg}>
+      <div className={styles.bg} ref={bgRef}>
         <Avatar
           id={userId}
           name={displayName}
@@ -135,7 +172,7 @@ export const MediaView: FC<Props> = ({
             // for readability
             [styles.translucent]: status,
           })}
-          style={{ display: video && videoEnabled ? "none" : "initial" }}
+          style={{ display: showVideo ? "none" : "initial" }}
         />
         {video?.publication !== undefined && (
           <VideoTrack
@@ -143,7 +180,13 @@ export const MediaView: FC<Props> = ({
             // There's no reason for this to be focusable
             tabIndex={-1}
             disablePictureInPicture
-            style={{ display: video && videoEnabled ? "block" : "none" }}
+            // Keep the element rendered (so it keeps decoding) but invisible
+            // until the first frame is ready, so the WebView's grey play-button
+            // placeholder never shows.
+            style={{
+              display: video && videoEnabled ? "block" : "none",
+              visibility: showVideo ? "visible" : "hidden",
+            }}
             data-testid="video"
           />
         )}
