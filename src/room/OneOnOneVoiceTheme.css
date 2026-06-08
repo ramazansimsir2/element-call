@@ -278,16 +278,150 @@ body [class*="_tabbed_"] {
   --cpd-color-bg-action-secondary-pressed: #c4e2f7;
 }
 
-/* Remove the white/grey readability fade behind the top bar and the bottom
-   footer in ALL calls (including video). The default gradients fade to
-   --cpd-color-bg-canvas-default (white in the light theme), which looked out of
-   place over the video. The voice screens already drop these via the scoped
-   rules above; these unscoped rules cover the video call too. */
-[class*="_bar_"]::before {
-  display: none !important;
+/* Voice screens drop the top bar's white readability fade via the scoped rules
+   above. For the video call we don't remove it but swap the white gradient for a
+   light DARK one, so the white top-bar buttons/icons below stay readable over a
+   bright video (same idea as the footer's dark gradient). */
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_bar_"]::before {
+  display: block !important;
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.5) 100%
+  ) !important;
 }
-body [class*="_footer_"] {
-  background: none !important;
+
+/* Top bar (back / room title / ⋮ / collapse-close): white text + icons, and the
+   buttons get the same frosted circle as the footer. Mirrors the voice rules but
+   scoped to the video call via :not(). */
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_bar_"] {
+  color: #ffffff;
+  --cpd-color-text-primary: #ffffff;
+  --cpd-color-icon-primary: #ffffff;
+}
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_bar_"]
+  button {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 50% !important;
+}
+/* The close/collapse (and back) icon stays black by default — force it white. */
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_bar_"]
+  button
+  svg {
+  color: #ffffff !important;
+}
+
+/* ===== Görüntülü arama footer'ı (sesli/grup-sesli/lobby DEĞİL) =====
+   Bu ekranlarda arka planda gerçek video var ve her renk olabilir, bu yüzden
+   butonlara "bizim" buzlu görünümü veriyoruz ve görünürlüğü garantilemek için
+   footer'ın altına kaldırılan beyaz geçiş yerine HAFİF KOYU bir geçiş koyuyoruz.
+   Sesli/grup-sesli/lobby ekranları yukarıdaki bayrak-kapsamlı kurallarla
+   yönetildiğinden :not() ile buradan muaf tutulur. */
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"] {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.55) 100%
+  ) !important;
+}
+
+/* Footer çağrı butonları (kırmızı Bitir hariç): beyaz buzlu yuvarlaklar. */
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"]
+  [class*="_button_"]:not([class*="_destructive_"]) {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+}
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"]
+  [class*="_button_"]:not([class*="_destructive_"])
+  > svg {
+  color: #ffffff !important;
+}
+
+/* Mute/kamera ikili butonu (MediaMuteAndSwitchButton): tek geniş buzlu pill;
+   ana buton parlak daire, chevron çıplak ikon. Sesli aramadakiyle aynı. */
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"]
+  [class*="_container_"] {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: none !important;
+}
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"]
+  [class*="_container_"]
+  [class*="_button_"]:not([class*="_menuButton_"]):not([class*="_destructive_"]) {
+  background: rgba(255, 255, 255, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+}
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"]
+  [class*="_container_"]
+  [class*="_menuButton_"]:not([class*="_destructive_"]) {
+  background: transparent !important;
+  border: none !important;
+}
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"]
+  [class*="_container_"]
+  svg {
+  color: #ffffff !important;
+}
+
+/* Kırmızı "Bitir" (End) butonu kırmızı kalsın ama içindeki ikon beyaz olsun
+   (varsayılanda siyah kalıyor). Hem doğrudan svg rengiyle hem de compound'ın
+   kullandığı stopgap token ile garantiye alıyoruz. */
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"] {
+  --stopgap-color-on-solid-accent: #ffffff;
+}
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"]
+  [class*="_button_"][class*="_destructive_"]
+  svg {
+  color: #ffffff !important;
+}
+
+/* Buton altı yazıları: koyu geçiş üzerinde net okunsun diye beyaz + gölge. */
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_footer_"]
+  [class*="_buttonLabel_"] {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 /* Device-picker Menu (the chevron next to the mute/camera button) — a compound
