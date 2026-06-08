@@ -278,20 +278,43 @@ body [class*="_tabbed_"] {
   --cpd-color-bg-action-secondary-pressed: #c4e2f7;
 }
 
-/* Voice screens drop the top bar's white readability fade via the scoped rules
-   above. For the video call we don't remove it but swap the white gradient for a
-   light DARK one, so the white top-bar buttons/icons below stay readable over a
-   bright video (same idea as the footer's dark gradient). */
+/* The top bar sits ABOVE the call view over the (now blue) body, not over the
+   video, so it needs no readability fade. Drop the default white gradient (which
+   showed as a grey band) just like the voice screens do. */
 body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
     [data-ec-lobby="true"]
   )
   [class*="_bar_"]::before {
-  display: block !important;
-  background: linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.5) 100%
-  ) !important;
+  display: none !important;
+}
+
+/* Paint the page background blue during a video call so the blue extends behind
+   the transparent AppBar (no grey title bar) and into any letterbox gaps (no
+   white bands). Matches the inRoom gradient's top colour so there's no seam at
+   the header — same approach as the voice screen's body background. Flag is set
+   by InCallView only while a video call is up. */
+body[data-ec-video-call="true"] {
+  background-color: #2aa8e8;
+}
+
+/* 1:1 video call where the remote's camera is off → the one-on-one portrait
+   layout shows a big centered avatar with the name/duration below it. At full
+   size the avatar overlaps the name, so shrink it and lift it up to make room —
+   same tuning as the voice screen (which only applied while data-ec-voice-call
+   was set, i.e. before the remote joined). */
+body[data-ec-video-call="true"] [data-layout="one-on-one-portrait"] {
+  --media-view-avatar-scale: 0.68;
+  --media-view-avatar-top: 40%;
+}
+
+/* "Waiting for media…" status on the video call: white + centered at the top
+   instead of the default dark top-left badge, so it reads nicely over the blue. */
+body[data-ec-video-call="true"] [class*="_status_"] {
+  color: #ffffff !important;
+  justify-self: center;
+  margin-inline: 0;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 /* Top bar (back / room title / ⋮ / collapse-close): white text + icons, and the
@@ -322,6 +345,19 @@ body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
   button
   svg {
   color: #ffffff !important;
+}
+
+/* ===== Görüntülü arama arka planı =====
+   Kamera kapalıyken (avatar) veya video kenar boşluklarında arka plan varsayılan
+   BEYAZ yerine sesli aramayla aynı mavi degrade olsun — buzlu beyaz butonlarla
+   uyumlu ve "bizim tasarım"la tutarlı. Gerçek video geldiğinde tile videoyu
+   kapladığı için bu mavi yalnızca kamera kapalı / boşluk alanlarında görünür. */
+body:not([data-ec-voice-call="true"]):not([data-ec-voice-group="true"]):not(
+    [data-ec-lobby="true"]
+  )
+  [class*="_inRoom_"] {
+  background: linear-gradient(180deg, #2aa8e8 0%, #176fb0 55%, #0a4e80 100%);
+  --video-tile-background: transparent;
 }
 
 /* ===== Görüntülü arama footer'ı (sesli/grup-sesli/lobby DEĞİL) =====

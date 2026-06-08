@@ -328,6 +328,18 @@ export const InCallView: FC<InCallViewProps> = ({
     };
   }, [isVideoCalling]);
 
+  // Whole video call (connected phase too): tag the body so the blue background
+  // can extend behind the transparent AppBar and into any letterbox gaps —
+  // otherwise the default white canvas shows as a grey title bar / side bands.
+  // Only present during a video call, so other pages are unaffected.
+  useEffect(() => {
+    if (callIntent === "audio") return;
+    document.body.dataset.ecVideoCall = "true";
+    return (): void => {
+      delete document.body.dataset.ecVideoCall;
+    };
+  }, [callIntent]);
+
   // Telegram-style voice-reactive blob rings: publish the remote loudness while
   // the 1:1 voice screen is up (works in both earpiece and loudspeaker modes).
   useRemoteVoiceLevel(
