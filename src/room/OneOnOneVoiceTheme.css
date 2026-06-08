@@ -71,6 +71,13 @@ body[data-ec-voice-group="true"] [class*="_inRoom_"] {
    LobbyView's data-ec-lobby flag. */
 body[data-ec-lobby="true"] [class*="_inRoom_"] {
   background: linear-gradient(180deg, #2aa8e8 0%, #176fb0 55%, #0a4e80 100%);
+  /* Camera preview's avatar box / letterbox uses this; make it transparent so the
+     blue shows through instead of a white tile. */
+  --video-tile-background: transparent;
+}
+/* "Video loading…" text over the blue preview: white instead of grey. */
+body[data-ec-lobby="true"] [class*="_cameraStarting_"] {
+  color: #ffffff !important;
 }
 /* Drop VideoPreview's white bottom fade (it shows as white under the join
    button on the blue lobby). */

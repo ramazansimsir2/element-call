@@ -5,7 +5,14 @@ SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 Please see LICENSE in the repository root for full details.
 */
 
-import { useEffect, useMemo, useRef, type FC, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FC,
+  type ReactNode,
+} from "react";
 import useMeasure from "react-use-measure";
 import { facingModeFromLocalTrack, type LocalVideoTrack } from "livekit-client";
 import classNames from "classnames";
@@ -59,6 +66,34 @@ export const VideoPreview: FC<Props> = ({
     [videoEnabled, videoTrack],
   );
 
+  // Keep the avatar up until the <video> actually has a decoded frame. An empty
+  // <video> (no track yet, or track attached but first frame not decoded) shows
+  // the WebView's grey play-button placeholder, so we keep the element rendered
+  // (so it keeps decoding and firing events) but invisible until it's ready.
+  const [videoReady, setVideoReady] = useState(false);
+  useEffect(() => {
+    const el = videoEl.current;
+    if (!el || !videoTrack) {
+      setVideoReady(false);
+      return;
+    }
+    setVideoReady(el.readyState >= 2);
+    const markReady = (): void => setVideoReady(true);
+    const markNotReady = (): void => setVideoReady(false);
+    el.addEventListener("loadeddata", markReady);
+    el.addEventListener("canplay", markReady);
+    el.addEventListener("playing", markReady);
+    el.addEventListener("emptied", markNotReady);
+    return (): void => {
+      el.removeEventListener("loadeddata", markReady);
+      el.removeEventListener("canplay", markReady);
+      el.removeEventListener("playing", markReady);
+      el.removeEventListener("emptied", markNotReady);
+    };
+  }, [videoTrack]);
+
+  const showAvatar = !videoEnabled || !videoReady;
+
   return (
     <div className={classNames(styles.preview)} ref={previewRef}>
       <video
@@ -74,8 +109,12 @@ export const VideoPreview: FC<Props> = ({
         // There's no reason for this to be focusable
         tabIndex={-1}
         disablePictureInPicture
+        style={{
+          display: videoEnabled ? "block" : "none",
+          visibility: videoEnabled && videoReady ? "visible" : "hidden",
+        }}
       />
-      {(!videoEnabled || cameraIsStarting) && (
+      {showAvatar && (
         <>
           <div className={styles.avatarContainer}>
             {cameraIsStarting && (
