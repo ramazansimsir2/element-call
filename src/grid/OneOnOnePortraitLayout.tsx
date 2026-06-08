@@ -116,9 +116,24 @@ export const makeOneOnOnePortraitLayout: CallLayout<
 
   fixed: function OneOnOnePortraitLayoutFixed({ ref, model, Slot }): ReactNode {
     useUpdateLayout();
+    const media = useBehavior(model.spotlight.media$);
+    const media0 = media[0];
+    // Telegram-style pulsing rings while the call is still being established:
+    // ringing ("Aranıyor…") or the local user connecting ("Bağlanıyor…"). Once
+    // the remote's media takes the spotlight (call timer) they stop.
+    const showRipples =
+      media0?.type === "ringing" ||
+      (media0?.type === "user" && media0.local);
     return (
       <div ref={ref} className={styles.layer}>
         <VoiceBlobs />
+        {showRipples && (
+          <div className="ec-calling-ripples" aria-hidden>
+            <span />
+            <span />
+            <span />
+          </div>
+        )}
         <Slot
           className={styles.spotlight}
           id="spotlight"

@@ -340,6 +340,49 @@ export const InCallView: FC<InCallViewProps> = ({
     };
   }, [callIntent]);
 
+  // Connecting overlay ("Bağlanıyor…") — shown while connecting, before the
+  // calling layout settles. We keep it on screen for a short fade AFTER the
+  // calling layout appears, so its (identical) avatar masks the calling tile's
+  // scale-in animation; otherwise the avatar appears to fly in on the switch.
+  const connectingActive =
+    (callIntent === "audio" || isVideoCalling) &&
+    participantCount <= 1 &&
+    layout.type !== "one-on-one-portrait" &&
+    layout.type !== "pip" &&
+    !reconnecting;
+  const [showConnecting, setShowConnecting] = useState(connectingActive);
+  const [connectingFading, setConnectingFading] = useState(false);
+  useEffect(() => {
+    if (connectingActive) {
+      setShowConnecting(true);
+      setConnectingFading(false);
+      return;
+    }
+    if (!showConnecting) return;
+    // The lingering fade only exists to mask the calling tile's scale-in when we
+    // move to the ringing screen (still just us). If the remote has actually
+    // joined (>=2), hide immediately so their incoming video is never covered.
+    if (participantCount >= 2) {
+      setShowConnecting(false);
+      return;
+    }
+    setConnectingFading(true);
+    const id = window.setTimeout(() => setShowConnecting(false), 450);
+    return (): void => window.clearTimeout(id);
+  }, [connectingActive, showConnecting, participantCount]);
+
+  // For a 1:1 (DM) room, colour the connecting avatar from the OTHER member's
+  // userId so it matches the calling screen (whose avatar is keyed off the
+  // callee's userId). For groups keep the room id (the group avatar) unchanged.
+  const connectingAvatarId = useMemo(() => {
+    const members = matrixRoom.getJoinedMembers();
+    if (members.length !== 2) return matrixInfo.roomId;
+    return (
+      members.find((m) => m.userId !== matrixInfo.userId)?.userId ??
+      matrixInfo.roomId
+    );
+  }, [matrixRoom, matrixInfo.roomId, matrixInfo.userId]);
+
   // Telegram-style voice-reactive blob rings: publish the remote loudness while
   // the 1:1 voice screen is up (works in both earpiece and loudspeaker modes).
   useRemoteVoiceLevel(
@@ -557,22 +600,17 @@ export const InCallView: FC<InCallViewProps> = ({
     />
   );
 
-  // While connecting (before the ringing/one-on-one layout settles) show a
-  // Telegram-style "Bağlanıyor…" screen instead of the default grid tile of the
-  // local user. Covers both 1:1 voice and the video calling phase
-  // (isVideoCalling), which otherwise briefly flashes your own camera as a grid
-  // card before the "Görüntülü aranıyor" screen appears. participantCount counts
-  // ALL members including the local user, so this only applies before anyone
-  // else has joined (<=1); once the call has 3+ members it is a group (grid) and
-  // must NOT be covered.
-  const connectingOverlay =
-    (callIntent === "audio" || isVideoCalling) &&
-    participantCount <= 1 &&
-    layout.type !== "one-on-one-portrait" &&
-    layout.type !== "pip" &&
-    !reconnecting ? (
-      <ConnectingOverlay matrixInfo={matrixInfo} />
-    ) : null;
+  // The Telegram-style "Bağlanıyor…" screen (see connectingActive above). Shown
+  // instead of the default grid tile of the local user, and lingers with a short
+  // fade across the switch to the calling layout so the avatar doesn't fly in.
+  const connectingOverlay = showConnecting ? (
+    <ConnectingOverlay
+      matrixInfo={matrixInfo}
+      avatarId={connectingAvatarId}
+      videoCall={callIntent !== "audio"}
+      fadingOut={connectingFading}
+    />
+  ) : null;
 
   // If the reconnecting toast or earpiece overlay obscures the media tiles, we
   // need to remove them from the accessibility tree and block focus.

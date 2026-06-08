@@ -317,6 +317,52 @@ body[data-ec-video-call="true"] [class*="_status_"] {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
+/* ===== "Aranıyor…" / "Bağlanıyor…" sırasında avatar etrafında Telegram tarzı
+   nabız halkaları (dekoratif, sese tepkisiz). Öğe yalnızca bu durumlarda
+   render edilir (OneOnOnePortraitLayout); avatar merkezine, sese-tepkili
+   VoiceBlobs ile aynı noktaya hizalı. ===== */
+.ec-calling-ripples {
+  position: absolute;
+  inset-block-start: var(--media-view-avatar-top, 40%);
+  inset-inline-start: 50%;
+  inline-size: 0;
+  block-size: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.ec-calling-ripples span {
+  position: absolute;
+  inset-block-start: -110px;
+  inset-inline-start: -110px;
+  inline-size: 220px;
+  block-size: 220px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  opacity: 0;
+  animation: ec-calling-ripple 2.6s ease-out infinite;
+}
+.ec-calling-ripples span:nth-child(2) {
+  animation-delay: 0.85s;
+}
+.ec-calling-ripples span:nth-child(3) {
+  animation-delay: 1.7s;
+}
+@keyframes ec-calling-ripple {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion) {
+  .ec-calling-ripples span {
+    animation: none;
+  }
+}
+
 /* Top bar (back / room title / ⋮ / collapse-close): white text + icons, and the
    buttons get the same frosted circle as the footer. Mirrors the voice rules but
    scoped to the video call via :not(). */

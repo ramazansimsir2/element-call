@@ -9,24 +9,51 @@ Please see LICENSE in the repository root for full details.
   position: fixed;
   inset: 0;
   z-index: var(--call-view-overlay-layer);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  /* Lift the avatar/name block to match the calling screen (avatar centered at
-  ~40% of the viewport, not dead center) so there is no jump between screens. */
-  justify-content: flex-start;
-  padding-block-start: calc(40vh - 56px);
-  gap: var(--cpd-space-4x);
   /* Same blue gradient as the call view so it covers the connecting grid tile
   seamlessly; sits below the header/footer (overlay layer) so they stay usable. */
   background: linear-gradient(180deg, #2aa8e8 0%, #176fb0 55%, #0a4e80 100%);
   color: #fff;
+  opacity: 1;
+}
+
+/* Fade out across the switch to the calling layout. The calling screen behind is
+   an identical avatar/name, so the only thing this masks is the calling tile's
+   scale-in — the transition reads as just the status text changing. */
+.overlay.fadingOut {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+/* Avatar centered at 40% of the viewport — identical to the calling screen
+   (--media-view-avatar-top) so there is no jump between the two screens. */
+.avatar {
+  position: absolute;
+  inset-block-start: 40%;
+  inset-inline-start: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Name + status block, positioned exactly like the calling screen's .callerInfo
+   (top 52%, stacked and centered). */
+.callerInfo {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 52%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cpd-space-2x);
+  padding-inline: var(--cpd-space-6x);
+  text-align: center;
 }
 
 .name {
-  margin: 0;
   text-align: center;
   color: #fff;
+  font-size: 1.75rem;
+  font-weight: 600;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 25%);
 }
 
 .callingStatus {
@@ -37,4 +64,10 @@ Please see LICENSE in the repository root for full details.
   font-size: 1.05rem;
   font-weight: 500;
   text-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+}
+
+/* Keep the pulsing rings behind the avatar (above the gradient, below the
+   in-flow/positioned avatar). */
+.overlay :global(.ec-calling-ripples) {
+  z-index: -1;
 }
